@@ -11,12 +11,18 @@ import {
 
 import AdminApiClient from "lib/api-client/AdminApiClient";
 
+let adminApiClient = new AdminApiClient();
+
 const Index = () => {
-  const shopSwr = new AdminApiClient().getShop();
+  const shopSwr = adminApiClient.getShop();
+  const [email, setEmail] = React.useState("");
+
+  React.useEffect(() => {
+    setEmail(shopSwr.data.customer_email);
+  }, [shopSwr.data]);
+
   if (shopSwr.error) return "An error has occurred.";
   if (!shopSwr.data) return "Loading...";
-
-  const [email, setEmail] = React.useState(shopSwr.data.customer_email);
 
   console.log("shop", shopSwr.data);
 

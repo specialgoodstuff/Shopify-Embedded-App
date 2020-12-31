@@ -40,6 +40,7 @@ export default class ApiClient {
     return useSWR(
       key,
       async (url: string, method: string, body: string | undefined) => {
+        console.log("fetch", url, fetchOptions);
         return fetch(url, fetchOptions)
           .then((response) => {
             return response.json();
