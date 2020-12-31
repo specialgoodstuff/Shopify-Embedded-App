@@ -1,3 +1,5 @@
+import React from "react";
+
 import {
   Page,
   Heading,
@@ -7,17 +9,16 @@ import {
   Layout,
 } from "@shopify/polaris";
 
-import ApiClient from "lib/api-client/ApiClient";
+import AdminApiClient from "lib/api-client/AdminApiClient";
 
 const Index = () => {
-  console.log("ApiClient", ApiClient);
+  const shopSwr = new AdminApiClient().getShop();
+  if (shopSwr.error) return "An error has occurred.";
+  if (!shopSwr.data) return "Loading...";
 
-  const { data, error } = new ApiClient().get("shopify-api/admin/shop.json");
+  const [email, setEmail] = React.useState(shopSwr.data.customer_email);
 
-  if (error) return "An error has occurred.";
-  if (!data) return "Loading...";
-
-  console.log("data", data);
+  console.log("shop", shopSwr.data);
 
   return (
     <Page>
@@ -28,9 +29,10 @@ const Index = () => {
         >
           <Card sectioned>
             <FormLayout>
-              <TextField label="Store name" onChange={() => {}} />
               <TextField
                 type="email"
+                placeholder="Enter email address"
+                value={email}
                 label="Account email"
                 onChange={() => {}}
               />

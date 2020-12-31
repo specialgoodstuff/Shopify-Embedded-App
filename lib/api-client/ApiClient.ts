@@ -9,7 +9,8 @@ export default class ApiClient {
 
   private request(
     urlOrUrlGetter: UrlOrUrlGetter,
-    fetchOptions: RequestInit | undefined = undefined
+    fetchOptions: RequestInit | undefined = undefined,
+    responseHandler: undefined | ((value: any) => any) = (value) => value
   ): responseInterface<any, any> {
     // @see the 'Dependent Fetching' section of https://github.com/vercel/swr
     let url: string | null;
@@ -19,6 +20,8 @@ export default class ApiClient {
       } catch (e) {
         url = null;
       }
+    } else {
+      url = urlOrUrlGetter;
     }
 
     let key = null;
@@ -37,24 +40,28 @@ export default class ApiClient {
     return useSWR(
       key,
       async (url: string, method: string, body: string | undefined) => {
-        return fetch(url, fetchOptions).then((response) => {
-          return response.json();
-        });
+        return fetch(url, fetchOptions)
+          .then((response) => {
+            return response.json();
+          })
+          .then(responseHandler);
       }
     );
   }
 
   public get(
     url: UrlOrUrlGetter,
-    fetchOptions: RequestInit | undefined = undefined
+    fetchOptions: RequestInit | undefined = undefined,
+    responseHandler: undefined | ((value: any) => any) = undefined
   ): responseInterface<any, any> {
-    return this.request(url, fetchOptions);
+    return this.request(url, fetchOptions, responseHandler);
   }
 
   public submit(
     url: UrlOrUrlGetter,
     data: any,
-    method: "post" | "put" = "post"
+    method: "post" | "put" = "post",
+    responseHandler: undefined | ((value: any) => any) = undefined
   ): responseInterface<any, any> {
     let fetchOptions: RequestInit = {
       method: method,
@@ -64,6 +71,6 @@ export default class ApiClient {
       body: JSON.stringify(data),
     };
 
-    return this.request(url, fetchOptions);
+    return this.request(url, fetchOptions, responseHandler);
   }
 }
