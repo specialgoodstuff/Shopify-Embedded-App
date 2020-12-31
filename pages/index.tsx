@@ -18,7 +18,9 @@ const Index = () => {
   const [email, setEmail] = React.useState("");
 
   React.useEffect(() => {
-    setEmail(shopSwr.data.customer_email);
+    if (shopSwr.data && email == "") {
+      setEmail(shopSwr.data.customer_email);
+    }
   }, [shopSwr.data]);
 
   if (shopSwr.error) return "An error has occurred.";
