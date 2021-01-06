@@ -5,12 +5,23 @@ import { ShopResponse } from "./AdminApiResponses";
 import { isClient } from "lib/Util";
 
 export default class AdminApiClient extends ApiClient {
-  public asSwr(): responseInterface<any, any> {
+  public request(
+    urlOrUrlGetter: UrlOrUrlGetter,
+    fetchOptions: RequestInit | undefined = undefined,
+    responseHandler: undefined | ((value: any) => any) = (value) => value
+  ): this {
     // admin api requests must be made client-side after a session has been initiated
-    if (!isClient()) {
-      return useSWR(null);
-    } else {
+    if (isClient()) {
+      super.request(urlOrUrlGetter, fetchOptions, responseHandler);
+    }
+    return this;
+  }
+
+  public asSwr(): responseInterface<any, any> {
+    if (isClient()) {
       return super.asSwr();
+    } else {
+      return useSWR(null);
     }
   }
 

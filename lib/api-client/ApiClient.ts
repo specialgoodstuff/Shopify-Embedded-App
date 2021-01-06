@@ -12,7 +12,7 @@ export default class ApiClient {
     return this.#requestUrl;
   }
 
-  private request(
+  public request(
     urlOrUrlGetter: UrlOrUrlGetter,
     fetchOptions: RequestInit | undefined = undefined,
     responseHandler: undefined | ((value: any) => any) = (value) => value
