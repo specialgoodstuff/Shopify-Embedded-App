@@ -27,7 +27,6 @@ const {
   SHOPIFY_API_SECRET,
   SHOPIFY_API_KEY,
   SCOPES,
-  SHOP,
   API_VERSION,
 } = process.env;
 
@@ -53,7 +52,7 @@ app.prepare().then(() => {
       async afterAuth(ctx) {
         // Access token and shop available in ctx.state.shopify
         const { shop } = ctx.state.shopify;
-
+        //console.log("afterAuth", shop);
         // Redirect to app with shop parameter upon auth
         ctx.redirect(`/?shop=${shop}`);
       },
@@ -84,8 +83,9 @@ app.prepare().then(() => {
     proxy(
       "/shopify-api/admin",
       (params, ctx): IKoaProxiesOptions => {
-        const { accessToken } = ctx.session;
-        const target = `https://${SHOP}`;
+        const { accessToken, shop } = ctx.session;
+        //console.log("session", ctx.session);
+        const target = `https://${shop}`;
         return {
           target: target,
           changeOrigin: true,

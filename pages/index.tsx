@@ -14,11 +14,11 @@ import AdminApiClient from "lib/api-client/AdminApiClient";
 let adminApiClient = new AdminApiClient();
 
 const Index = () => {
-  const shopSwr = adminApiClient.getShop();
-  const [email, setEmail] = React.useState("");
+  const shopSwr = adminApiClient.getShop().asSwr();
+  const [email, setEmail] = React.useState("sender-email@shop.com");
 
   React.useEffect(() => {
-    if (shopSwr.data && email == "") {
+    if (shopSwr.data) {
       setEmail(shopSwr.data.customer_email);
     }
   }, [shopSwr.data]);
@@ -38,12 +38,26 @@ const Index = () => {
           <Card sectioned>
             <FormLayout>
               <TextField
+                disabled
                 type="email"
-                placeholder="Enter email address"
+                placeholder="Sender Email"
                 value={email}
-                label="Account email"
-                onChange={() => {}}
+                label="Sender email"
               />
+              <p>
+                The email address we'll sync to your order timeline is presented
+                above.
+                <br />
+                To update it, change the <strong>sender email</strong> in your{" "}
+                <a
+                  href={
+                    "https://" + shopSwr.data.domain + "/admin/settings/general"
+                  }
+                  target="_parent"
+                >
+                  general site settings
+                </a>
+              </p>
             </FormLayout>
           </Card>
         </Layout.AnnotatedSection>
