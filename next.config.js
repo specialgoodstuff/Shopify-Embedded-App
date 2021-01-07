@@ -16,5 +16,6 @@ module.exports = withCSS({
   publicRuntimeConfig: {
     // Will be available on both server and client
     host: process.env.HOST,
+    nylasClientId: process.env.NYLAS_CLIENT_ID,
   },
 });

@@ -1,4 +1,6 @@
 import React from "react";
+import getConfig from "next/config";
+const { publicRuntimeConfig } = getConfig();
 
 import {
   Page,
@@ -7,6 +9,7 @@ import {
   TextField,
   FormLayout,
   Layout,
+  Button,
 } from "@shopify/polaris";
 
 import AdminApiClient from "lib/api-client/AdminApiClient";
@@ -32,8 +35,8 @@ const Index = () => {
     <Page>
       <Layout>
         <Layout.AnnotatedSection
-          title="Email details"
-          description="Specify the account you'd like to use and authorize it"
+          title="Verify your email"
+          description="Review the email account you'll be using."
         >
           <Card sectioned>
             <FormLayout>
@@ -59,6 +62,32 @@ const Index = () => {
                 </a>
               </p>
             </FormLayout>
+          </Card>
+        </Layout.AnnotatedSection>
+        <Layout.AnnotatedSection
+          title="Authorize us"
+          description="Authorize our application to use your email account."
+        >
+          <Card sectioned>
+            <p>
+              We do not store your account credentials directly.
+              <br />
+              Rather, you login to your email account, and grant our application
+              access via oauth.
+            </p>
+            <br />
+            <Button
+              url={`https://api.nylas.com/oauth/authorize?login_hint=${encodeURIComponent(
+                email
+              )}&client_id=${
+                publicRuntimeConfig.nylasClientId
+              }&response_type=token&redirect_uri=${encodeURIComponent(
+                publicRuntimeConfig.host + "/nylas-api/callback"
+              )}&scopes=email.send,email.read_only&state=CSRF_TOKEN`}
+              primary
+            >
+              Grant access to your account
+            </Button>
           </Card>
         </Layout.AnnotatedSection>
       </Layout>{" "}
