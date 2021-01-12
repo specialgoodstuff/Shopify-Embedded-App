@@ -1,0 +1,115 @@
+version: '3'
+services:
+  # PHP Service
+  soe-web:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    image: soe-web
+    container_name: soe-web 
+    restart: unless-stopped
+    tty: true
+    environment:
+      DB_HOST: seo-db
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    working_dir: /var/www
+    networks:
+      - soe-network
+    volumes:
+      - ./web:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    depends_on:
+      - soe-db
+      - soe-db-test
+      
+  # Nginx Service
+  soe-web-webserver:
+    image: nginx:alpine
+    container_name: soe-web-webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - soe-network
+    volumes:
+      - ./web:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+
+  # Node/NextJS service
+  soe-embedded:
+    build: 
+      context: .
+      dockerfile: ./docker/node/Dockerfile
+    command: sh -c "npm run dev"
+    env_file: ./embedded/.env
+    container_name: soe-embedded
+    ports:
+      - 3000:3000
+    networks:
+      - soe-network
+    volumes:
+      - ./embedded:/var/www
+      #- /var/www/node_modules
+    command: ["npm", "run", "dev"]
+
+  # MySQL Service
+  soe-db:
+    image: mysql:8.0.21
+    container_name: soe-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    networks:
+      - soe-network
+    volumes:
+      - soe-dbdata:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+
+  soe-db-test:
+    image: mysql:8.0.21
+    container_name: soe-db-test
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    networks:
+      - soe-network
+    volumes:
+      - soe-dbdata-test:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+
+  soe-mailhog:
+      image: 'mailhog/mailhog:latest'
+      ports:
+          - 1025:1025
+          - 8025:8025
+      networks:
+          - soe-network
+
+
+# Docker Networks
+networks:
+  soe-network:
+    driver: bridge
+
+# Volumes
+volumes:
+  soe-dbdata:
+    driver: local
+  soe-dbdata-test:
+    driver: local

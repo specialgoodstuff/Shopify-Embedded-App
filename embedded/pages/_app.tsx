@@ -15,14 +15,14 @@ const client = new ApolloClient({
 });
 class MyApp extends App {
   render() {
-    const { Component, pageProps, shopOrigin } = this.props;
+    const { Component, pageProps, shopOrigin } = this.props as any;
 
     console.log("props", this.props);
     return (
       <AppProvider i18n={translations}>
         <Provider
           config={{
-            apiKey: API_KEY,
+            apiKey: process.env.API_KEY,
             shopOrigin: shopOrigin,
             forceRedirect: true,
           }}
@@ -38,6 +38,7 @@ class MyApp extends App {
 
 MyApp.getInitialProps = async ({ ctx }) => {
   return {
+    pageProps: undefined,
     shopOrigin: ctx.query.shop,
   };
 };
