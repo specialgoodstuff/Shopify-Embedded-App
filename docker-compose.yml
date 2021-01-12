@@ -1,5 +1,36 @@
 version: '3'
 services:
+
+  soe-nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - soe-network
+    volumes:
+      - "/etc/nginx/vhost.d"
+      - "/usr/share/nginx/html"
+      - "/var/run/docker.sock:/tmp/docker.sock:ro"
+      #- "nginx_certs:/etc/nginx/certs:rw"
+
+  # Nginx Service
+  soe-nginx:
+    image: nginx:alpine
+    container_name: soe-nginx
+    restart: unless-stopped
+    tty: true
+    networks:
+      - soe-network
+    volumes:
+      - ./web:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    environment:
+      VIRTUAL_HOST: soe.localhost
+    depends_on:
+      - soe-embedded
+      - soe-web
+
   # PHP Service
   soe-web:
     build:
@@ -23,21 +54,6 @@ services:
     depends_on:
       - soe-db
       - soe-db-test
-      
-  # Nginx Service
-  soe-web-webserver:
-    image: nginx:alpine
-    container_name: soe-web-webserver
-    restart: unless-stopped
-    tty: true
-    ports:
-      - "80:80"
-      - "443:443"
-    networks:
-      - soe-network
-    volumes:
-      - ./web:/var/www
-      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
 
   # Node/NextJS service
   soe-embedded:
@@ -46,6 +62,9 @@ services:
       dockerfile: ./docker/node/Dockerfile
     command: sh -c "npm run dev"
     env_file: ./embedded/.env
+    environment:
+      VIRTUAL_HOST: embedded.soe.localhost
+      PORT: 3000
     container_name: soe-embedded
     ports:
       - 3000:3000
