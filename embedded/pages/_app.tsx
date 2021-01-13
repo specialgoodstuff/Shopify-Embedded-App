@@ -16,13 +16,14 @@ const client = new ApolloClient({
 class MyApp extends App {
   render() {
     const { Component, pageProps, shopOrigin } = this.props as any;
+    console.log("process.env", process.env);
 
     console.log("props", this.props);
     return (
       <AppProvider i18n={translations}>
         <Provider
           config={{
-            apiKey: process.env.API_KEY,
+            apiKey: API_KEY,
             shopOrigin: shopOrigin,
             forceRedirect: true,
           }}

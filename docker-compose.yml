@@ -1,6 +1,7 @@
 version: '3'
 services:
 
+  # maps any service with a VIRTUAL_HOST env variable to the specified host 
   soe-nginx-proxy:
     image: jwilder/nginx-proxy
     ports:
@@ -13,6 +14,24 @@ services:
       - "/usr/share/nginx/html"
       - "/var/run/docker.sock:/tmp/docker.sock:ro"
       #- "nginx_certs:/etc/nginx/certs:rw"
+
+  soe-web-localtunnel:
+    image: efrecon/localtunnel
+    networks:
+      - soe-network
+    depends_on:
+      - soe-nginx
+    command:
+      --local-host soe-nginx --subdomain websoe --port 80
+
+  soe-embedded-localtunnel:
+    image: efrecon/localtunnel
+    networks:
+      - soe-network
+    depends_on:
+      - soe-embedded
+    command:
+      --local-host soe-embedded --subdomain embeddedsoe --port 3000    
 
   # Nginx Service
   soe-nginx:
@@ -64,10 +83,13 @@ services:
     env_file: ./embedded/.env
     environment:
       VIRTUAL_HOST: embedded.soe.localhost
+      HOST: https://embeddedsoe.loca.lt    
       PORT: 3000
     container_name: soe-embedded
     ports:
       - 3000:3000
+    expose:
+      - 3000
     networks:
       - soe-network
     volumes:

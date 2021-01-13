@@ -31,6 +31,7 @@ export default class AdminApiClient extends ApiClient {
   }
 
   public getShop(): this {
+    console.log("getShop");
     return this.get("shop.json", undefined, (data) => data.shop);
   }
 }

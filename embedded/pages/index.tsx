@@ -1,7 +1,8 @@
 import React from "react";
 import getConfig from "next/config";
 const { publicRuntimeConfig } = getConfig();
-
+import isEmail from "validator/lib/isEmail";
+import _ from "lodash";
 import {
   Page,
   Heading,
@@ -19,6 +20,7 @@ let adminApiClient = new AdminApiClient();
 const Index = () => {
   const shopSwr = adminApiClient.getShop().asSwr();
   const [email, setEmail] = React.useState("sender-email@shop.com");
+  const [emailError, setEmailError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (shopSwr.data) {
@@ -31,6 +33,15 @@ const Index = () => {
 
   console.log("shop", shopSwr.data);
 
+  let debouncedEmailHandler = _.debounce((email: string) => {
+    setEmail(email);
+    if (!isEmail(email)) {
+      setEmailError("A valid email address is required.");
+    } else {
+      setEmailError(null);
+    }
+  }, 500);
+
   return (
     <Page>
       <Layout>
@@ -40,18 +51,9 @@ const Index = () => {
         >
           <Card sectioned>
             <FormLayout>
-              <TextField
-                disabled
-                type="email"
-                placeholder="Sender Email"
-                value={email}
-                label="Sender email"
-              />
               <p>
-                The email address we'll sync to your order timeline is presented
-                above.
-                <br />
-                To update it, change the <strong>sender email</strong> in your{" "}
+                By default, we sync order timelines to the{" "}
+                <strong>sender email</strong> specified in your{" "}
                 <a
                   href={
                     "https://" + shopSwr.data.domain + "/admin/settings/general"
@@ -61,6 +63,21 @@ const Index = () => {
                   general site settings
                 </a>
               </p>
+              <p>
+                However, if that email account is forwarded to another, you can
+                update the address we use here. The address specified here must
+                recieve any replies a customer makes to the order emails that
+                they recieve for this application to work.
+              </p>
+
+              <TextField
+                type="email"
+                placeholder="Sender Email"
+                value={email}
+                onChange={debouncedEmailHandler}
+                label="Sender email"
+                error={emailError}
+              />
             </FormLayout>
           </Card>
         </Layout.AnnotatedSection>
@@ -85,6 +102,7 @@ const Index = () => {
                 publicRuntimeConfig.host + "/nylas-api/callback"
               )}&scopes=email.send,email.read_only&state=CSRF_TOKEN`}
               primary
+              disabled={!!emailError}
             >
               Grant access to your account
             </Button>
