@@ -14,33 +14,28 @@ import {
 } from "@shopify/polaris";
 
 import AdminApiClient from "lib/api-client/AdminApiClient";
+import {
+  responseInterface,
+  ShopResponse,
+} from "lib/api-client/AdminApiResponses";
 
 let adminApiClient = new AdminApiClient();
 
 const Index = () => {
-  const shopSwr = adminApiClient.getShop().asSwr();
-  const [email, setEmail] = React.useState("sender-email@shop.com");
+  let shopSwr: responseInterface<
+    ShopResponse,
+    any
+  > = adminApiClient.getShop().asSwr();
+  const defaultEmail = "sender-email@shop.com";
+  const [email, setEmail] = React.useState(defaultEmail);
   const [emailError, setEmailError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (shopSwr.data) {
-      setEmail(shopSwr.data.customer_email);
-    }
-  }, [shopSwr.data]);
 
   if (shopSwr.error) return "An error has occurred.";
   if (!shopSwr.data) return "Loading...";
 
-  console.log("shop", shopSwr.data);
-
-  let debouncedEmailHandler = _.debounce((email: string) => {
-    setEmail(email);
-    if (!isEmail(email)) {
-      setEmailError("A valid email address is required.");
-    } else {
-      setEmailError(null);
-    }
-  }, 500);
+  if (email == defaultEmail) {
+    setEmail(shopSwr.data.customer_email);
+  }
 
   return (
     <Page>
@@ -74,7 +69,14 @@ const Index = () => {
                 type="email"
                 placeholder="Sender Email"
                 value={email}
-                onChange={debouncedEmailHandler}
+                onChange={(email: string) => {
+                  setEmail(email);
+                  if (!isEmail(email)) {
+                    setEmailError("A valid email address is required.");
+                  } else {
+                    setEmailError(null);
+                  }
+                }}
                 label="Sender email"
                 error={emailError}
               />

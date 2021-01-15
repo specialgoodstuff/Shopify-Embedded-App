@@ -16,14 +16,15 @@ const client = new ApolloClient({
 class MyApp extends App {
   render() {
     const { Component, pageProps, shopOrigin } = this.props as any;
-    console.log("process.env", process.env);
+    // Set by babel config defined in next.config.js
+    // @ts-ignore
+    const apiKey = API_KEY;
 
-    console.log("props", this.props);
     return (
       <AppProvider i18n={translations}>
         <Provider
           config={{
-            apiKey: API_KEY,
+            apiKey: apiKey,
             shopOrigin: shopOrigin,
             forceRedirect: true,
           }}

@@ -1,10 +1,9 @@
 import useSWR, { SWRConfig, responseInterface } from "swr";
-
 export type UrlOrUrlGetter = string | (() => any);
 
 export default class ApiClient {
   #requestUrl: undefined | string;
-  #responsePromise: undefined | Promise<any>;
+  #fetcher: () => Promise<any> | undefined;
   #swrKey: any;
 
   public getRequestUrl(url: string): string {
@@ -19,7 +18,7 @@ export default class ApiClient {
   ): this {
     this.#swrKey = undefined;
     this.#requestUrl = undefined;
-    this.#responsePromise = undefined;
+    this.#fetcher = undefined;
 
     // @see the 'Dependent Fetching' section of https://github.com/vercel/swr
     let url: string | null;
@@ -45,13 +44,14 @@ export default class ApiClient {
 
       this.#swrKey = body ? [url, method, body] : [url, method];
 
-      console.log("fetch", url, fetchOptions);
-
-      this.#responsePromise = fetch(url, fetchOptions)
-        .then((response) => {
-          return response.json();
-        })
-        .then(responseHandler);
+      this.#fetcher = async () => {
+        console.log("fetch", url);
+        return fetch(url, fetchOptions)
+          .then((response) => {
+            return response.json();
+          })
+          .then(responseHandler);
+      };
     }
 
     return this;
@@ -83,7 +83,7 @@ export default class ApiClient {
   }
 
   public asPromise(): Promise<any> {
-    if (!this.#responsePromise) {
+    if (!this.#fetcher) {
       if (!this.#requestUrl) {
         throw new Error(
           "Only requests initialized with a string url can be returned as a promise."
@@ -92,15 +92,15 @@ export default class ApiClient {
         throw new Error("You must make a request before invoking asPromise()");
       }
     }
-    return this.#responsePromise;
+    return this.#fetcher();
   }
 
   public asSwr(): responseInterface<any, any> {
     return useSWR(this.#swrKey, async () => {
-      if (!this.#responsePromise) {
+      if (!this.#fetcher) {
         throw new Error("You must make a request before invoking asSwr()");
       } else {
-        return this.#responsePromise;
+        return this.#fetcher();
       }
     });
   }

@@ -15,23 +15,28 @@ services:
       - "/var/run/docker.sock:/tmp/docker.sock:ro"
       #- "nginx_certs:/etc/nginx/certs:rw"
 
-  soe-web-localtunnel:
-    image: efrecon/localtunnel
+  soe-web-ngrok:
+    image: wernight/ngrok
     networks:
       - soe-network
     depends_on:
-      - soe-nginx
-    command:
-      --local-host soe-nginx --subdomain websoe --port 80
+      - soe-nginx-proxy
+    environment:
+      NGROK_AUTH: ${NGROK_AUTH}
+      NGROK_SUBDOMAIN: sgs
+      NGROK_LOOK_DOMAIN: soe-nginx
 
-  soe-embedded-localtunnel:
-    image: efrecon/localtunnel
+  soe-embedded-ngrok:
+    image: wernight/ngrok
     networks:
       - soe-network
     depends_on:
       - soe-embedded
-    command:
-      --local-host soe-embedded --subdomain embeddedsoe --port 3000    
+    environment:
+      NGROK_AUTH: ${NGROK_AUTH}
+      NGROK_SUBDOMAIN: embedded-sgs
+      NGROK_PORT: 3000
+      NGROK_LOOK_DOMAIN: soe-embedded
 
   # Nginx Service
   soe-nginx:
@@ -60,7 +65,7 @@ services:
     restart: unless-stopped
     tty: true
     environment:
-      DB_HOST: seo-db
+      DB_HOST: soe-db
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -83,7 +88,7 @@ services:
     env_file: ./embedded/.env
     environment:
       VIRTUAL_HOST: embedded.soe.localhost
-      HOST: https://embeddedsoe.loca.lt    
+      HOST: https://embedded-sgs.ngrok.io  
       PORT: 3000
     container_name: soe-embedded
     ports:
