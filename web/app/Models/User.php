@@ -28,15 +28,7 @@ class User extends Authenticatable
    *
    * @var array
    */
-  protected $hidden = [
-    'password',
-    'remember_token',
-    'created_at',
-    'updated_at',
-    'deleted_at',
-    'email_verified_at',
-    'last_login_ip',
-  ];
+  protected $hidden = ['password', 'remember_token', 'created_at', 'updated_at', 'deleted_at', 'last_login_ip'];
 
   /**
    * The accessors to append to the model's array form.

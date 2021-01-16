@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b4bd1eee28d4fafb08a4cdbb5e2a72ce",
+    "content-hash": "1e75344907ec77c245b2dcaac9fe4e88",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2678,16 +2678,16 @@
         },
         {
             "name": "sfelix-martins/json-exception-handler",
-            "version": "v2.3.0",
+            "version": "v2.3.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/sfelix-martins/json-exception-handler.git",
-                "reference": "182914bd1e28e88bb5329e2b1b8bc52c4a506f76"
+                "url": "https://github.com/specialgoodstuff/json-exception-handler.git",
+                "reference": "a726bb6dffd5dc4fca9d0cc2ded4b76310023464"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sfelix-martins/json-exception-handler/zipball/182914bd1e28e88bb5329e2b1b8bc52c4a506f76",
-                "reference": "182914bd1e28e88bb5329e2b1b8bc52c4a506f76",
+                "url": "https://api.github.com/repos/specialgoodstuff/json-exception-handler/zipball/a726bb6dffd5dc4fca9d0cc2ded4b76310023464",
+                "reference": "a726bb6dffd5dc4fca9d0cc2ded4b76310023464",
                 "shasum": ""
             },
             "require": {
@@ -2710,7 +2710,14 @@
                     "SMartins\\Exceptions\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "files": [
+                    "tests/TestCase.php"
+                ],
+                "psr-4": {
+                    "SMartins\\Exceptions\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -2730,10 +2737,9 @@
                 "laravel"
             ],
             "support": {
-                "issues": "https://github.com/sfelix-martins/json-exception-handler/issues",
-                "source": "https://github.com/sfelix-martins/json-exception-handler/tree/2.0"
+                "source": "https://github.com/specialgoodstuff/json-exception-handler/tree/v2.3.2"
             },
-            "time": "2020-07-14T23:46:44+00:00"
+            "time": "2020-11-13T05:41:45+00:00"
         },
         {
             "name": "silber/bouncer",

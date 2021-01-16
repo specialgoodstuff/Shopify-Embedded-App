@@ -11,6 +11,10 @@
     {
       "type": "vcs",
       "url": "https://github.com/specialgoodstuff/laravel-convert-case-middleware"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/specialgoodstuff/json-exception-handler"
     }
   ],
   "require": {
@@ -23,7 +27,7 @@
     "laravel/framework": "^8.12",
     "laravel/tinker": "^2.5",
     "nesbot/carbon": "^2.41",
-    "sfelix-martins/json-exception-handler": "^2.3",
+    "sfelix-martins/json-exception-handler": "^2.3.2",
     "silber/bouncer": "v1.0.0-rc.10",
     "tomlerendu/laravel-convert-case-middleware": "dev-master"
   },
