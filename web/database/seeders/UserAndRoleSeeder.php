@@ -41,8 +41,8 @@ class UserAndRoleSeeder extends Seeder
 
     $apiUser = User::firstOrCreate([
       'email' => 'api-user@shopifyorderemails.com',
-      'username' => 'api-user',
-      'password' => Hash::make('api-user-password'),
+      'username' => 'api',
+      'password' => Hash::make('itWouldBeAVeryFineThingToLetMeIn!'),
       'type' => 'system',
     ])->assign('super-admin');
 

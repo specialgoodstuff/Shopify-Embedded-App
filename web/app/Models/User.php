@@ -83,7 +83,7 @@ class User extends Authenticatable
   public function login(): User
   {
     $this->update([
-      'api_token' => Str::random(60),
+      'access_token' => Str::random(60),
       'token_expires_at' => Carbon::now()->addDays(1),
       'last_login_ip' => $_SERVER['REMOTE_ADDR'],
       'last_login_at' => Carbon::now(),

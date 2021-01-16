@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\ShopController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,8 +37,8 @@ Route::group(['middleware' => 'api'], function () {
   Route::apiResource('users', UserController::class);
   //});
 
-  //plans
-  //Route::apiResource('plans', PlanController::class)->only(['index', 'show']);
+  //shops
+  Route::apiResource('shops', ShopController::class)->only(['index', 'post']);
 
   //tests
   Route::group(['prefix' => 'test'], function () {
