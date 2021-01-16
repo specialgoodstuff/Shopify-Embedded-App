@@ -7,19 +7,25 @@
     "laravel"
   ],
   "license": "MIT",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/specialgoodstuff/laravel-convert-case-middleware"
+    }
+  ],
   "require": {
-    "php": "^8.0",
+    "php": "^7.3|^8.0",
+    "darkaonline/l5-swagger": "^8.0",
     "fideloper/proxy": "^4.4",
     "fruitcake/laravel-cors": "^2.0",
     "guzzlehttp/guzzle": "^7.0.1",
     "lanlin/nylas-php": "^4.2",
     "laravel/framework": "^8.12",
     "laravel/tinker": "^2.5",
-    "darkaonline/l5-swagger": "^8.0",
     "nesbot/carbon": "^2.41",
-    "sfelix-martins/json-exception-handler": "^2.3.2",
-    "silber/bouncer": "v1.0.0-rc.9",
-    "tomlerendu/laravel-convert-case-middleware": "^1.1"
+    "sfelix-martins/json-exception-handler": "^2.3",
+    "silber/bouncer": "v1.0.0-rc.10",
+    "tomlerendu/laravel-convert-case-middleware": "dev-master"
   },
   "require-dev": {
     "facade/ignition": "^2.5",

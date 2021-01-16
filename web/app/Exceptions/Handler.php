@@ -58,13 +58,6 @@ class Handler extends ExceptionHandler
    */
   public function register()
   {
-    /*
-    $this->renderable(function (\Throwable $t, $request) {
-      //die('yo');
-      //return parent::render($request, $t);
-      //die('yo');
-      //return response()->view('errors.custom', [], 500);
-    });*/
   }
 
   /**
@@ -76,6 +69,7 @@ class Handler extends ExceptionHandler
    *
    * @throws \Throwable
    */
+
   public function render($request, Throwable $exception)
   {
     if (static::isJsonRequest($request)) {
@@ -104,7 +98,6 @@ class Handler extends ExceptionHandler
           }
         }
       }
-
       return $jsonApiResponse;
     }
 
