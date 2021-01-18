@@ -70,6 +70,8 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       SESSION_DOMAIN: .localhost
+      APP_URL: ${APP_URL}
+      EMBEDDED_URL: ${EMBEDDED_URL}
     working_dir: /var/www
     networks:
       - soe-network
@@ -89,7 +91,9 @@ services:
     env_file: ./embedded/.env
     environment:
       VIRTUAL_HOST: embedded.soe.localhost
-      HOST: https://embedded-sgs.ngrok.io  
+      HOST: ${EMBEDDED_URL}  
+      APP_URL: ${APP_URL}
+      EMBEDDED_URL: ${EMBEDDED_URL}
       PORT: 3000
     container_name: soe-embedded
     ports:
