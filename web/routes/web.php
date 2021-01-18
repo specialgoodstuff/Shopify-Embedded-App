@@ -14,6 +14,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-  throw new \Exception('yo');
   return view('welcome');
 });

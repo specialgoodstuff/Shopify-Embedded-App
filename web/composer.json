@@ -25,6 +25,7 @@
     "guzzlehttp/guzzle": "^7.0.1",
     "lanlin/nylas-php": "^4.2",
     "laravel/framework": "^8.12",
+    "laravel/sanctum": "^2.8",
     "laravel/tinker": "^2.5",
     "nesbot/carbon": "^2.41",
     "sfelix-martins/json-exception-handler": "^2.3.2",

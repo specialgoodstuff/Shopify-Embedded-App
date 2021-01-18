@@ -26,15 +26,6 @@ class CreateUsersAndShopsTable extends Migration
         ->nullable()
         ->default(null);
       $table
-        ->string('access_token')
-        ->unique()
-        ->nullable()
-        ->default(null);
-      $table
-        ->datetime('token_expires_at')
-        ->nullable()
-        ->index();
-      $table
         ->string('nylas_access_token')
         ->unique()
         ->nullable()
