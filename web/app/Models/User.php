@@ -36,47 +36,14 @@ class User extends Authenticatable
    *
    * @var array
    */
-  protected $appends = ['roles'];
+  protected $appends = ['roles', 'accessToken'];
 
   /**
    * The attributes that should be cast to native types.
    *
    * @var array
    */
-  protected $casts = [
-    'email_verified_at' => 'datetime',
-  ];
-
-  /**
-   * Get the bookmarks for this user.
-   */
-  public function bookmarks(): object
-  {
-    return $this->hasMany(Bookmark::class);
-  }
-
-  public function bookmarksByType(string $type): object
-  {
-    return $this->bookmarks()->where('bookmarks.model_type', $type);
-  }
-
-  public function isBookmarked(object $object): bool
-  {
-    return $this->bookmarks()
-      ->where([['bookmarks.model_type', get_class($object)], ['bookmarks.model_id', $object->id]])
-      ->exists();
-  }
-
-  public function bookmark(object $object): object
-  {
-    if ($this->isBookmarked($object)) {
-      return $this->bookmarks()
-        ->where([['bookmarks.model_type', get_class($object)], ['bookmarks.model_id', $object->id]])
-        ->delete();
-    }
-
-    return $this->bookmarks()->create(['model_type' => get_class($object), 'model_id' => $object->id]);
-  }
+  protected $casts = [];
 
   /**
    * Updates token relevant timestamps / login information
@@ -84,12 +51,16 @@ class User extends Authenticatable
   public function login(): User
   {
     $this->update([
-      'access_token' => Str::random(60),
-      'token_expires_at' => Carbon::now()->addDays(1),
       'last_login_ip' => $_SERVER['REMOTE_ADDR'],
       'last_login_at' => Carbon::now(),
     ]);
 
+    $this->tokens()
+      ->where('name', 'login-token')
+      ->delete();
+    $token = $this->createToken('login-token');
+    //set current active access token
+    $this->withAccessToken($token);
     return $this;
   }
 
@@ -99,5 +70,13 @@ class User extends Authenticatable
   public function getRolesAttribute()
   {
     return $this->getRoles();
+  }
+
+  /**
+   * Makes active availale via $this->token
+   */
+  public function getAccessTokenAttribute()
+  {
+    return $this->currentAccessToken()->plainTextToken;
   }
 }

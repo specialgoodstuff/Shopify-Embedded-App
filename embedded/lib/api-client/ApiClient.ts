@@ -1,4 +1,4 @@
-import useSWR, { SWRConfig, responseInterface } from "swr";
+import useSWR, { SWRConfig, responseInterface } from 'swr';
 export type UrlOrUrlGetter = string | (() => any);
 
 export default class ApiClient {
@@ -7,7 +7,7 @@ export default class ApiClient {
   #swrKey: any;
 
   public getRequestUrl(url: string): string {
-    this.#requestUrl = "/" + url;
+    this.#requestUrl = '/' + url;
     return this.#requestUrl;
   }
 
@@ -22,7 +22,7 @@ export default class ApiClient {
 
     // @see the 'Dependent Fetching' section of https://github.com/vercel/swr
     let url: string | null;
-    if (typeof urlOrUrlGetter == "function") {
+    if (typeof urlOrUrlGetter == 'function') {
       try {
         url = urlOrUrlGetter();
       } catch (e) {
@@ -35,17 +35,13 @@ export default class ApiClient {
     if (url) {
       url = this.getRequestUrl(url);
 
-      let method =
-        fetchOptions && "method" in fetchOptions
-          ? fetchOptions.method.toLowerCase()
-          : "get";
-      let body =
-        fetchOptions && "body" in fetchOptions ? fetchOptions.body : undefined;
+      let method = fetchOptions && 'method' in fetchOptions ? fetchOptions.method.toLowerCase() : 'get';
+      let body = fetchOptions && 'body' in fetchOptions ? fetchOptions.body : undefined;
 
       this.#swrKey = body ? [url, method, body] : [url, method];
 
       this.#fetcher = async () => {
-        console.log("fetch", url);
+        console.log('fetch', url);
         return fetch(url, fetchOptions)
           .then((response) => {
             return response.json();
@@ -68,37 +64,35 @@ export default class ApiClient {
   public submit(
     url: UrlOrUrlGetter,
     data: any,
-    method: "post" | "put" = "post",
+    method: 'post' | 'put' = 'post',
     responseHandler: undefined | ((value: any) => any) = undefined
   ): this {
     let fetchOptions: RequestInit = {
       method: method,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data)
     };
 
     return this.request(url, fetchOptions, responseHandler);
   }
 
-  public asPromise(): Promise<any> {
+  public toPromise(): Promise<any> {
     if (!this.#fetcher) {
       if (!this.#requestUrl) {
-        throw new Error(
-          "Only requests initialized with a string url can be returned as a promise."
-        );
+        throw new Error('Only requests initialized with a string url can be returned as a promise.');
       } else {
-        throw new Error("You must make a request before invoking asPromise()");
+        throw new Error('You must make a request before invoking toPromise()');
       }
     }
     return this.#fetcher();
   }
 
-  public asSwr(): responseInterface<any, any> {
+  public toSwr(): responseInterface<any, any> {
     return useSWR(this.#swrKey, async () => {
       if (!this.#fetcher) {
-        throw new Error("You must make a request before invoking asSwr()");
+        throw new Error('You must make a request before invoking toSwr()');
       } else {
         return this.#fetcher();
       }

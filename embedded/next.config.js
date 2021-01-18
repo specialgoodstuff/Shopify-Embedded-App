@@ -1,7 +1,7 @@
-const { parsed: localEnv } = require("dotenv").config();
-const withCSS = require("@zeit/next-css");
+const { parsed: localEnv } = require('dotenv').config();
+const withCSS = require('@zeit/next-css');
 
-const webpack = require("webpack");
+const webpack = require('webpack');
 const apiKey = JSON.stringify(process.env.SHOPIFY_API_KEY);
 
 module.exports = withCSS({
@@ -16,6 +16,8 @@ module.exports = withCSS({
   publicRuntimeConfig: {
     // Will be available on both server and client
     host: process.env.HOST,
-    nylasClientId: process.env.NYLAS_CLIENT_ID,
-  },
+    appUrl: process.env.APP_URL,
+    embeddedUrl: process.env.EMBEDDED_URL,
+    nylasClientId: process.env.NYLAS_CLIENT_ID
+  }
 });

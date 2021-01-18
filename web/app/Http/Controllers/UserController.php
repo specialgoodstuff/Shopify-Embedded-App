@@ -36,22 +36,24 @@ Route::post('/sanctum/token', function (Request $request) {
   public function login(Request $request)
   {
     $this->validate($request, [
-      'username' => 'required|email',
+      'username' => 'required',
       'password' => 'required',
     ]);
 
-    $user = User::where('email', '=', $request->email)->first();
+    $user = User::where('username', '=', $request->username)->first();
     if (empty($user)) {
       throw ValidationException::withMessages([
-        'email' => 'The email address ' . $request->email . ' is not registered',
+        'email' => 'The username ' . $request->username . ' is not registered.',
       ]);
     }
 
     if (!Hash::check($request->password, $user->password)) {
-      throw ValidationException::withMessages(['password' => 'The password is incorrect']);
+      throw ValidationException::withMessages(['password' => 'The password is incorrect.']);
     }
 
     return $user->login();
+
+    //return $user->with('tokens')->get();
   }
 
   /**

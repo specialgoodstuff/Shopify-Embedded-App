@@ -8,10 +8,10 @@ import { Page, Heading, Card, TextField, FormLayout, Layout, Button } from '@sho
 import ShopifyAdminApiClient from 'lib/api-client/ShopifyAdminApiClient';
 import { responseInterface, ShopResponse } from 'lib/api-client/ShopifyAdminApiResponses';
 
-let ShopifyAdminApiClient = new ShopifyAdminApiClient();
+let shopifyAdminApiClient = new ShopifyAdminApiClient();
 
 const Index = () => {
-  let shopSwr: responseInterface<ShopResponse, any> = ShopifyAdminApiClient.getShop().asSwr();
+  let shopSwr: responseInterface<ShopResponse, any> = shopifyAdminApiClient.getShop().toSwr();
   const defaultEmail = 'sender-email@shop.com';
   const [email, setEmail] = React.useState(defaultEmail);
   const [emailError, setEmailError] = React.useState<string | null>(null);
