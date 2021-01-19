@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Silber\Bouncer\Bouncer;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 class ShopController extends Controller
 {
   /**
@@ -15,15 +16,19 @@ class ShopController extends Controller
    */
   public function store(Request $request)
   {
-    // @todo - implement authentication
-    //$currentUser = Auth::user();
-    //dd($currentUser);
+    $user = Auth::user();
+    dd($user);
 
+    if ($user->can('create-shops')) {
+      dd($user);
+    }
+
+    die('yep');
+
+    /*
     $validationRules = [
-      'first_name' => 'required|max:40',
-      'last_name' => 'required|max:255',
-      'email' => 'required|email|unique:users',
-      'password' => 'required|min:8',
+      'id' => 'required',
+      'domain' => 'required',
     ];
     $this->validate($request, $validationRules);
 
@@ -33,6 +38,6 @@ class ShopController extends Controller
     }
     $user->save();
     $user->assign('guest');
-    return $user->login();
+    return $user->login();*/
   }
 }

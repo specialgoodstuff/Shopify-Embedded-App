@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Bouncer;
+use Silber\Bouncer\Bouncer;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -42,15 +42,22 @@ class UserAndRoleSeeder extends Seeder
     $apiUser = User::firstOrCreate([
       'email' => 'api-user@shopifyorderemails.com',
       'username' => 'api',
-      'password' => Hash::make('itWouldBeAVeryFineThingToLetMeIn!'),
+      'password' => Hash::make('itWouldBeAVeryFineThingToLetMeIn2021!'),
       'type' => 'system',
     ])->assign('super-admin');
 
     $superAdminUser = User::firstOrCreate([
       'email' => 'admin@shopifyorderemails.com',
-      'password' => Hash::make('admin-password'),
+      'password' => Hash::make('adminPassword2021!'),
       'username' => 'admin',
       'type' => 'user',
     ])->assign('admin');
+
+    Bouncer::ability()->firstOrCreate([
+      'name' => 'create-shops',
+      'title' => 'Create shops',
+    ]);
+
+    Bouncer::allow('super-admin')->everything();
   }
 }

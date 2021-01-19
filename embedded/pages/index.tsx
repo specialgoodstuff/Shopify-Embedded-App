@@ -10,7 +10,7 @@ import { responseInterface, ShopResponse } from 'lib/api-client/ShopifyAdminApiR
 
 let shopifyAdminApiClient = new ShopifyAdminApiClient();
 
-const Index = () => {
+const IndexPage = () => {
   let shopSwr: responseInterface<ShopResponse, any> = shopifyAdminApiClient.getShop().toSwr();
   const defaultEmail = 'sender-email@shop.com';
   const [email, setEmail] = React.useState(defaultEmail);
@@ -88,4 +88,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default IndexPage;

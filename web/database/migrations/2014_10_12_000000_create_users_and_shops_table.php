@@ -35,6 +35,12 @@ class CreateUsersAndShopsTable extends Migration
         ->unique()
         ->nullable()
         ->default(null);
+
+      $table
+        ->json('settings')
+        ->nullable()
+        ->default(null);
+
       $table
         ->string('last_login_ip')
         ->nullable()
@@ -52,15 +58,25 @@ class CreateUsersAndShopsTable extends Migration
 
     Schema::create('shops', function (Blueprint $table) {
       $table->bigInteger('id', false, true)->primary();
+
+      $table
+        ->foreignId('user_id')
+        ->references('id')
+        ->on('users')
+        ->onUpdate('cascade')
+        ->onDelete('cascade');
+
       $table
         ->string('domain')
         ->nullable()
         ->default(null)
         ->index();
+
       $table
-        ->json('settings')
+        ->json('data')
         ->nullable()
         ->default(null);
+
       $table->timestamps();
       $table->index(['created_at', 'updated_at']);
     });

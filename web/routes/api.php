@@ -30,15 +30,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::group(['middleware' => 'api'], function () {
-  //users
+  //UNAUTHENTICATED
+
+  //user login
   Route::match(['put', 'post'], 'users/login', [UserController::class, 'login']);
-
-  //Route::group(['middleware' => 'auth:api'], function () {
-  Route::apiResource('users', UserController::class);
-  //});
-
-  //shops
-  Route::apiResource('shops', ShopController::class)->only(['index', 'post']);
 
   //tests
   Route::group(['prefix' => 'test'], function () {
@@ -50,5 +45,13 @@ Route::group(['middleware' => 'api'], function () {
     Route::get('success/null', [TestController::class, 'successResponseViaNull']);
     Route::get('error/exception', [TestController::class, 'errorResponseViaException']);
     Route::get('error/notJsonable', [TestController::class, 'errorResponseViaNotJsonable']);
+  });
+
+  //AUTHENTICATED
+  Route::group(['middleware' => 'auth:sanctum'], function () {
+    //create/update shop
+    Route::match(['put', 'post'], 'shops', [ShopController::class, 'store']);
+
+    //Route::apiResource('shops', ShopController::class)->only(['index', 'post']);
   });
 });

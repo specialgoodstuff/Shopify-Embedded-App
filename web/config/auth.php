@@ -41,7 +41,9 @@ return [
     ],
 
     'api' => [
-      'driver' => 'token',
+      #'driver' => 'token',
+      // Sanctum uses Session AND Token authentication
+      'driver' => 'session',
       'provider' => 'users',
       'hash' => true,
     ],

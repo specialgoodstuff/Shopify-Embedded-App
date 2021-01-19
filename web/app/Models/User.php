@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Laravel\Sanctum\HasApiTokens;
+use App\Traits\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Silber\Bouncer\Database\HasRolesAndAbilities;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Crypt;
 use Carbon\Carbon;
 use App\Traits\Serializes;
 
@@ -55,10 +56,10 @@ class User extends Authenticatable
       'last_login_at' => Carbon::now(),
     ]);
 
-    $this->tokens()
-      ->where('name', 'login-token')
-      ->delete();
-    $token = $this->createToken('login-token');
+    $token = $this->tokens()->firstWhere('name', 'login-token');
+    if (empty($token)) {
+      $token = $this->createToken('login-token');
+    }
     //set current active access token
     $this->withAccessToken($token);
     return $this;
@@ -77,6 +78,6 @@ class User extends Authenticatable
    */
   public function getAccessTokenAttribute()
   {
-    return $this->currentAccessToken()->plainTextToken;
+    return Crypt::decryptString($this->currentAccessToken()->token);
   }
 }
