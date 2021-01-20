@@ -15,23 +15,23 @@ class UserAndRoleSeeder extends Seeder
    *
    * @return void
    */
-  public function run()
+  public function run(Bouncer $bouncer)
   {
     // Create Roles
 
-    $accountUserRole = Bouncer::role()->firstOrCreate([
+    $accountUserRole = $bouncer->role()->firstOrCreate([
       'name' => 'shop',
       'title' => 'Shop User',
       'level' => 100,
     ]);
 
-    $pbmAdminRole = Bouncer::role()->firstOrCreate([
+    $pbmAdminRole = $bouncer->role()->firstOrCreate([
       'name' => 'admin',
       'title' => 'Admin',
       'level' => 500,
     ]);
 
-    $superAdminRole = Bouncer::role()->firstOrCreate([
+    $superAdminRole = $bouncer->role()->firstOrCreate([
       'name' => 'super-admin',
       'title' => 'Super admin',
       'level' => 1000,
@@ -53,11 +53,11 @@ class UserAndRoleSeeder extends Seeder
       'type' => 'user',
     ])->assign('admin');
 
-    Bouncer::ability()->firstOrCreate([
-      'name' => 'create-shops',
-      'title' => 'Create shops',
+    $bouncer->ability()->firstOrCreate([
+      'name' => 'shop-create',
+      'title' => 'Create shop',
     ]);
 
-    Bouncer::allow('super-admin')->everything();
+    $bouncer->allow('super-admin')->everything();
   }
 }

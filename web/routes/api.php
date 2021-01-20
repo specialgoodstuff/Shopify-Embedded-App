@@ -52,6 +52,8 @@ Route::group(['middleware' => 'api'], function () {
     //create/update shop
     Route::match(['put', 'post'], 'shops', [ShopController::class, 'store']);
 
+    //->middleware('can:shop-create');
+
     //Route::apiResource('shops', ShopController::class)->only(['index', 'post']);
   });
 });

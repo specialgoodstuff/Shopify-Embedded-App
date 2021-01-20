@@ -31,6 +31,6 @@ trait HasApiTokens
       'abilities' => $abilities,
     ]);
 
-    return new NewAccessToken($token, $token->id . '|' . $plainTextToken);
+    return $token;
   }
 }

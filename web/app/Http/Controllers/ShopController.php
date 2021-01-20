@@ -14,12 +14,17 @@ class ShopController extends Controller
    * @param  \Illuminate\Http\Request  $request
    * @return \Illuminate\Http\Response
    */
-  public function store(Request $request)
+  public function store(Request $request, Bouncer $bouncer)
   {
     $user = Auth::user();
-    dd($user);
 
-    if ($user->can('create-shops')) {
+    //Bouncer::get_class_methods
+
+    //dd(get_class_methods($bouncer));
+
+    dd($user->getAbilities()->toArray());
+
+    if ($bouncer->can('Create shop')) {
       dd($user);
     }
 
