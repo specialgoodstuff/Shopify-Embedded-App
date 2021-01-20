@@ -31,13 +31,13 @@ class UserAndRoleSeeder extends Seeder
     User::firstOrCreate([
       'email' => 'api-user@shopifyorderemails.com',
       'username' => 'api',
-      'password' => Hash::make('itWouldBeAVeryFineThingToLetMeIn2021!'),
+      'password' => 'itWouldBeAVeryFineThingToLetMeIn2021!',
       'type' => 'system',
     ])->assignRole('super-admin');
 
     User::firstOrCreate([
       'email' => 'admin@shopifyorderemails.com',
-      'password' => Hash::make('adminPassword2021!'),
+      'password' => 'adminPassword2021!',
       'username' => 'admin',
       'type' => 'user',
     ])->assignRole('admin');

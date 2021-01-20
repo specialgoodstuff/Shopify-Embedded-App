@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\Shop;
 class ShopController extends Controller
 {
   /**
@@ -17,31 +19,56 @@ class ShopController extends Controller
   {
     $user = Auth::user();
 
-    //Bouncer::get_class_methods
-
-    //dd(get_class_methods($bouncer));
-    /*
-    dd($user->getAbilities()->toArray());
-
-    if ($bouncer->can('Create shop')) {
-      dd($user);
-    }
-*/
-    die('yep');
-
-    /*
-    $validationRules = [
-      'id' => 'required',
-      'domain' => 'required',
+    $createValidationRules = [
+      'email' => 'required|email',
+      'domain' => 'required|string',
+      'data' => 'nullable|json',
+      'shopifyAccessToken' => 'nullable|string',
     ];
-    $this->validate($request, $validationRules);
 
-    $user = new User();
-    foreach (array_keys($validationRules) as $field) {
-      $user[$field] = $request[$field];
+    $updateValidationRules = array_merge($createValidationRules, [
+      'email' => 'email',
+      'domain' => 'string',
+    ]);
+
+    $this->validate($request, ['id' => 'required|numeric']);
+
+    $shop = Shop::find($request->get('id'));
+
+    if (empty($shop)) {
+      $this->validate($request, $createValidationRules);
+    } else {
+      $this->validate($request, $updateValidationRules);
     }
-    $user->save();
-    $user->assign('guest');
-    return $user->login();*/
+
+    $shopUser = User::where('username', $request->get('id'))->first();
+
+    $shopUserData = [
+      'username' => $request->get('id'),
+      'shopifyAccessToken' => $request->get('shopifyAccessToken'),
+      'email' => $request->get('email'),
+      'type' => 'shop',
+      'password' => env('SOE_SHOP_PASSWORD', 'luckBeALady021!'),
+    ];
+
+    if (empty($shopUser)) {
+      $shopUser = User::create($shopUserData);
+    } else {
+      $shopUser->update($shopUserData);
+    }
+    $shopUser->assignRole('shop');
+    //$shopUser->getLoginToken();
+
+    if (empty($shop)) {
+      $shop = new Shop();
+    }
+    $shop->fill($request->all());
+    // $shop->id = $request->get('id');
+    $shop->user()->associate($shopUser);
+    $shop->save();
+
+    return Shop::where('id', $request->get('id'))
+      ->with('user')
+      ->first();
   }
 }

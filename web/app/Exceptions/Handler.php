@@ -23,19 +23,6 @@ class Handler extends ExceptionHandler
   protected $exceptionHandlers = [];
 
   /**
-   * A list of the exceptions to show stack traces for when not in production
-   *
-   * @var array
-   */
-  protected $traceExceptions = [
-    'ErrorException',
-    'Exception',
-    'RuntimeException',
-    'InvalidArgumentException',
-    'Symfony\Component\Debug\Exception\FatalThrowableError',
-  ];
-
-  /**
    * A list of the exception types that are not reported.
    *
    * @var array
@@ -79,7 +66,7 @@ class Handler extends ExceptionHandler
       // that conforms to the json api spec if appropriate.
       // @see https://jsonapi.org/format/#errors
       if (!App::environment('production')) {
-        if (in_array(get_class($exception), $this->traceExceptions)) {
+        if (!in_array(get_class($exception), $this->dontReport)) {
           $jsonApiData = $jsonApiResponse->getData(true);
           if (isset($jsonApiData['errors'][0])) {
             // get the trace from the traditional json response

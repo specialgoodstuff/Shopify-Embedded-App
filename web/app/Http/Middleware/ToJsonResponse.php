@@ -30,7 +30,7 @@ class ToJsonResponse
     // bail for responses that are already wrapped
     if (is_array($content)) {
       foreach (['errors', 'data'] as $field) {
-        if (array_key_exists($field, $content)) {
+        if (isset($content[$field])) {
           return $response;
         }
       }

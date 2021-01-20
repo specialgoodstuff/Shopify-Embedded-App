@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Crypt;
 use Carbon\Carbon;
 use App\Traits\Serializes;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Shop;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -23,22 +25,14 @@ class User extends Authenticatable
    *
    * @var array
    */
-  protected $guarded = [];
+  protected $guarded = ['created_at', 'updated_at', 'deleted_at'];
 
   /**
    * The attributes that should be hidden for arrays.
    *
    * @var array
    */
-  protected $hidden = [
-    'roles',
-    'password',
-    'remember_token',
-    'created_at',
-    'updated_at',
-    'deleted_at',
-    'last_login_ip',
-  ];
+  protected $hidden = ['roles', 'password', 'created_at', 'updated_at', 'deleted_at', 'last_login_ip'];
 
   /**
    * The accessors to append to the model's array form.
@@ -55,6 +49,24 @@ class User extends Authenticatable
   protected $casts = [];
 
   /**
+   * Get the shop that owns the user.
+   */
+  public function shop()
+  {
+    return $this->hasOne(Shop::class);
+  }
+
+  public function getLoginToken()
+  {
+    $token = $this->tokens()->firstWhere('name', 'login-token');
+    if (empty($token)) {
+      $token = $this->createToken('login-token');
+    }
+
+    return $token;
+  }
+
+  /**
    * Updates token relevant timestamps / login information
    */
   public function login(): User
@@ -64,12 +76,6 @@ class User extends Authenticatable
       'last_login_at' => Carbon::now(),
     ]);
 
-    $token = $this->tokens()->firstWhere('name', 'login-token');
-    if (empty($token)) {
-      $token = $this->createToken('login-token');
-    }
-    //set current active access token
-    $this->withAccessToken($token);
     return $this;
   }
 
@@ -86,6 +92,47 @@ class User extends Authenticatable
    */
   public function getAccessTokenAttribute()
   {
-    return $this->currentAccessToken()->id . '|' . Crypt::decryptString($this->currentAccessToken()->token);
+    $token = $this->getLoginToken();
+    //$this->withAccessToken($token);
+    return $this->id . '|' . $token->token;
+
+    /*
+    $currentAccessToken = $this->currentAccessToken();
+    if (empty($currentAccessToken)) {
+      return null;
+    }
+    return $currentAccessToken->id . '|' . Crypt::decryptString($currentAccessToken->token);
+  */
+  }
+
+  /**
+   * Set the user type
+   *
+   * @param  string  $value
+   * @return void
+   */
+  public function setTypeAttribute(string $value)
+  {
+    $validTypes = ['user', 'shop', 'system'];
+    if (!in_array($value, $validTypes)) {
+      throw new \InvalidArgumentException(
+        "The user type '$value' must be one of the following: " . implode(', ', $validTypes) . '.'
+      );
+    }
+    $this->attributes['type'] = $value;
+  }
+
+  /**
+   * Set and has the user password
+   *
+   * @param  string  $value
+   * @return void
+   */
+  public function setPasswordAttribute(string $value)
+  {
+    if (empty($value)) {
+      throw new \InvalidArgumentException('The user password must not be empty.');
+    }
+    $this->attributes['password'] = Hash::make($value);
   }
 }

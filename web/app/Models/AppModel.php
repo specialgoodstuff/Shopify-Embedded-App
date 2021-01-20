@@ -21,7 +21,7 @@ class AppModel extends Model
    *
    * @var array
    */
-  protected $guarded = [];
+  protected $guarded = ['created_at', 'updated_at', 'deleted_at'];
 
   public function getHidden(): array
   {

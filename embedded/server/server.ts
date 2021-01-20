@@ -49,6 +49,18 @@ app.prepare().then(() => {
         const { shop, accessToken } = ctx.state.shopify;
         console.log('afterAuth', ctx.state.shopify);
 
+        console.log('SOE LOGIN', APP_URL + '/api/users/login', {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({
+            username: 'api',
+            password: SOE_API_PASSWORD
+          })
+        });
+
         // Login to the SOE Api and set the access token in a cookie
         fetch(APP_URL + '/api/users/login', {
           method: 'post',
@@ -84,21 +96,46 @@ app.prepare().then(() => {
 
             console.log('SHOP JSON', shopJson);
 
-            /*
-            const registerResponse = fetch(APP_URL + '/api/shops', {
+            console.log('REGISTER REQUEST', APP_URL + '/api/shops', {
               method: 'post',
               headers: {
                 'Content-Type': 'application/json',
-                Accept: 'application/json'
+                Accept: 'application/json',
+                Authorization: 'Bearer ' + response.data.accessToken
               },
               body: JSON.stringify({
-                username: 'api',
-                password: SOE_API_PASSWORD
+                id: shopJson.id,
+                domain: shopJson.domain,
+                email: shopJson.email,
+                data: shopJson
               })
             });
 
+            const registerResponse = await fetch(APP_URL + '/api/shops', {
+              method: 'post',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                Authorization: 'Bearer ' + response.data.accessToken
+              },
+              body: JSON.stringify({
+                id: shopJson.id,
+                domain: shopJson.domain,
+                email: shopJson.email,
+                data: shopJson
+              })
+            });
 
-            const soeAccessToken = response.data.accessToken;
+            const registerJson = await registerResponse.json();
+            console.log('REGISTER JSON', registerJson);
+
+            if (!registerJson || !registerJson.data || !registerJson.data.user || !registerJson.data.user.accessToken) {
+              throw new Error(
+                'We had trouble registering your shop with the Shopify Order Email API. Please try again later.'
+              );
+            }
+
+            const soeAccessToken = registerJson.data.user.accessToken;
             const shopifyAccessToken = accessToken;
             const cookieOptions = {
               httpOnly: true,
@@ -107,27 +144,30 @@ app.prepare().then(() => {
               overwrite: true
             };
 
+            console.log(
+              'SET COOKIE',
+              JSON.stringify({
+                shopifyAccessToken,
+                soeAccessToken
+              })
+            );
+
             ctx.cookies.set(
               'soeTokens',
               JSON.stringify({
-                shop,
                 shopifyAccessToken,
                 soeAccessToken
               }),
               cookieOptions
-            );*/
+            );
 
             // Redirect to app with shop parameter upon auth
             ctx.redirect(`/?shop=${shop}`);
           })
           .catch((error) => {
             console.log('ERROR', error);
-            /*
-            ctx.throw(
-              500,
-              'We had trouble authenticating against the Shopify Order Email API. Please try again later.'
-            );*/
-            ctx.redirect(`/?shop=${shop}&error=${encodeURIComponent(error.message)}`);
+            ctx.throw(500, error.message);
+            //ctx.redirect(`/?shop=${shop}&error=${encodeURIComponent(error.message)}`);
           });
       }
     })
