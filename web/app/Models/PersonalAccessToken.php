@@ -26,7 +26,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     [$id, $token] = explode('|', $token, 2);
 
     if ($instance = static::find($id)) {
-      return $instance->token == Crypt::encryptString($token) ? $instance : null;
+      return Crypt::decryptString($instance->token) == $token ? $instance : null;
     }
   }
 }

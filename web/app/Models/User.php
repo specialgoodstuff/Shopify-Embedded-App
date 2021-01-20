@@ -78,6 +78,6 @@ class User extends Authenticatable
    */
   public function getAccessTokenAttribute()
   {
-    return Crypt::decryptString($this->currentAccessToken()->token);
+    return $this->currentAccessToken()->id . '|' . Crypt::decryptString($this->currentAccessToken()->token);
   }
 }

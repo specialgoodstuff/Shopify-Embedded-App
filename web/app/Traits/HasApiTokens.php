@@ -22,6 +22,7 @@ trait HasApiTokens
    * @param  array  $abilities
    * @return \Laravel\Sanctum\NewAccessToken
    */
+
   public function createToken(string $name, array $abilities = ['*'])
   {
     $token = $this->tokens()->create([
