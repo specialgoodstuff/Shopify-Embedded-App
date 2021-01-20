@@ -50,9 +50,7 @@ Route::group(['middleware' => 'api'], function () {
   //AUTHENTICATED
   Route::group(['middleware' => 'auth:sanctum'], function () {
     //create/update shop
-    Route::match(['put', 'post'], 'shops', [ShopController::class, 'store']);
-
-    //->middleware('can:shop-create');
+    Route::match(['put', 'post'], 'shops', [ShopController::class, 'store'])->middleware('can:shop-create');
 
     //Route::apiResource('shops', ShopController::class)->only(['index', 'post']);
   });

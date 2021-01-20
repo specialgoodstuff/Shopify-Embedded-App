@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Silber\Bouncer\Bouncer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 class ShopController extends Controller
@@ -14,20 +13,20 @@ class ShopController extends Controller
    * @param  \Illuminate\Http\Request  $request
    * @return \Illuminate\Http\Response
    */
-  public function store(Request $request, Bouncer $bouncer)
+  public function store(Request $request)
   {
     $user = Auth::user();
 
     //Bouncer::get_class_methods
 
     //dd(get_class_methods($bouncer));
-
+    /*
     dd($user->getAbilities()->toArray());
 
     if ($bouncer->can('Create shop')) {
       dd($user);
     }
-
+*/
     die('yep');
 
     /*

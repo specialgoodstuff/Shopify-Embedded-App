@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Models\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
 use Illuminate\Container\Container;
-use Silber\Bouncer\Bouncer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,10 +21,6 @@ class AppServiceProvider extends ServiceProvider
     Relation::morphMap([
       'User' => 'App\Models\User',
     ]);
-
-    Container::getInstance()->singleton(Bouncer::class, function () {
-      return Bouncer::create();
-    });
   }
 
   /**

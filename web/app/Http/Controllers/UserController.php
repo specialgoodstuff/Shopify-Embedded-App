@@ -49,9 +49,8 @@ Route::post('/sanctum/token', function (Request $request) {
       throw ValidationException::withMessages(['password' => 'The password is incorrect.']);
     }
 
-    return $user->login();
-
-    //return $user->with('tokens')->get();
+    $user->login();
+    return $this->resource($user, 'UserResource');
   }
 
   /**

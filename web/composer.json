@@ -29,7 +29,7 @@
     "laravel/tinker": "^2.5",
     "nesbot/carbon": "^2.41",
     "sfelix-martins/json-exception-handler": "^2.3.2",
-    "silber/bouncer": "v1.0.0-rc.10",
+    "spatie/laravel-permission": "^3.18",
     "tomlerendu/laravel-convert-case-middleware": "dev-master"
   },
   "require-dev": {

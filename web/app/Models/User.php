@@ -7,15 +7,15 @@ use App\Traits\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Silber\Bouncer\Database\HasRolesAndAbilities;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Crypt;
 use Carbon\Carbon;
 use App\Traits\Serializes;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-  use HasFactory, Notifiable, HasRolesAndAbilities, Serializes, HasApiTokens;
+  use HasFactory, Notifiable, Serializes, HasApiTokens, HasRoles;
 
   /**
    * The attributes that aren't mass assignable.
@@ -30,14 +30,22 @@ class User extends Authenticatable
    *
    * @var array
    */
-  protected $hidden = ['password', 'remember_token', 'created_at', 'updated_at', 'deleted_at', 'last_login_ip'];
+  protected $hidden = [
+    'roles',
+    'password',
+    'remember_token',
+    'created_at',
+    'updated_at',
+    'deleted_at',
+    'last_login_ip',
+  ];
 
   /**
    * The accessors to append to the model's array form.
    *
    * @var array
    */
-  protected $appends = ['roles', 'accessToken'];
+  protected $appends = ['roleNames', 'accessToken'];
 
   /**
    * The attributes that should be cast to native types.
@@ -68,9 +76,9 @@ class User extends Authenticatable
   /**
    * Makes roles availale via $this->roles
    */
-  public function getRolesAttribute()
+  public function getRoleNamesAttribute()
   {
-    return $this->getRoles();
+    return $this->getRoleNames();
   }
 
   /**

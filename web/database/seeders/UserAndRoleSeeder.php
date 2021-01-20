@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Silber\Bouncer\Bouncer;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 class UserAndRoleSeeder extends Seeder
 {
   /**
@@ -15,49 +15,31 @@ class UserAndRoleSeeder extends Seeder
    *
    * @return void
    */
-  public function run(Bouncer $bouncer)
+  public function run()
   {
     // Create Roles
+    $superAdminRole = Role::create(['name' => 'super-admin']);
+    $adminRole = Role::create(['name' => 'admin']);
+    $shopRole = Role::create(['name' => 'shop']);
 
-    $accountUserRole = $bouncer->role()->firstOrCreate([
-      'name' => 'shop',
-      'title' => 'Shop User',
-      'level' => 100,
-    ]);
+    // Create Permissions
+    $permission = Permission::create(['name' => 'shop-create']);
+    //super-admin was implicitly assigned all permissions in the AuthServiceProvider
+    //$role->givePermissionTo($permission);
 
-    $pbmAdminRole = $bouncer->role()->firstOrCreate([
-      'name' => 'admin',
-      'title' => 'Admin',
-      'level' => 500,
-    ]);
-
-    $superAdminRole = $bouncer->role()->firstOrCreate([
-      'name' => 'super-admin',
-      'title' => 'Super admin',
-      'level' => 1000,
-    ]);
-
-    // Create admin and test Users and assign roles
-
-    $apiUser = User::firstOrCreate([
+    // Create Users
+    User::firstOrCreate([
       'email' => 'api-user@shopifyorderemails.com',
       'username' => 'api',
       'password' => Hash::make('itWouldBeAVeryFineThingToLetMeIn2021!'),
       'type' => 'system',
-    ])->assign('super-admin');
+    ])->assignRole('super-admin');
 
-    $superAdminUser = User::firstOrCreate([
+    User::firstOrCreate([
       'email' => 'admin@shopifyorderemails.com',
       'password' => Hash::make('adminPassword2021!'),
       'username' => 'admin',
       'type' => 'user',
-    ])->assign('admin');
-
-    $bouncer->ability()->firstOrCreate([
-      'name' => 'shop-create',
-      'title' => 'Create shop',
-    ]);
-
-    $bouncer->allow('super-admin')->everything();
+    ])->assignRole('admin');
   }
 }

@@ -9,5 +9,18 @@ use Illuminate\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+  use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+  public function resource($model, string $resourceClass = 'AppResource')
+  {
+    $class = '\App\Http\Resources\\' . $resourceClass;
+    return new $class($model);
+  }
+
+  public function collection($collection, string $resourceClass = 'AppResource')
+  {
+    $class = '\App\Http\Resources\\' . $resourceClass;
+    $method = 'collection';
+    return $class::$method($collection);
+  }
 }
