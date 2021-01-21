@@ -17,4 +17,12 @@ class Shop extends AppModel
   {
     return $this->belongsTo(User::class);
   }
+
+  public function getDataAttribute(?string $value)
+  {
+    if (is_null($value)) {
+      return null;
+    }
+    return json_decode($value);
+  }
 }

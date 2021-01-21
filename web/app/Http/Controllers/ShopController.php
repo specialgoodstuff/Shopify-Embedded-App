@@ -17,8 +17,6 @@ class ShopController extends Controller
    */
   public function store(Request $request)
   {
-    $user = Auth::user();
-
     $createValidationRules = [
       'email' => 'required|email',
       'domain' => 'required|string',
@@ -57,13 +55,11 @@ class ShopController extends Controller
       $shopUser->update($shopUserData);
     }
     $shopUser->assignRole('shop');
-    //$shopUser->getLoginToken();
 
     if (empty($shop)) {
       $shop = new Shop();
     }
     $shop->fill($request->all());
-    // $shop->id = $request->get('id');
     $shop->user()->associate($shopUser);
     $shop->save();
 

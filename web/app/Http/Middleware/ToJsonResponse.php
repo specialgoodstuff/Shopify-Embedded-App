@@ -28,11 +28,20 @@ class ToJsonResponse
     }
 
     // bail for responses that are already wrapped
+
+    $topLevelJsonSchemaProperties = ['data', 'errors', 'meta', 'jsonapi', 'links', 'included'];
     if (is_array($content)) {
-      foreach (['errors', 'data'] as $field) {
-        if (isset($content[$field])) {
-          return $response;
+      $topLevelPresent = false;
+      $nonTopLevelPresent = false;
+      foreach ($content as $property => $value) {
+        if (in_array($property, $topLevelJsonSchemaProperties)) {
+          $topLevelPresent = true;
+        } else {
+          $nonTopLevelPresent = true;
         }
+      }
+      if ($topLevelPresent && !$nonTopLevelPresent) {
+        return $response;
       }
     }
 

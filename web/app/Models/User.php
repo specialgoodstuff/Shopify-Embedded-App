@@ -94,15 +94,7 @@ class User extends Authenticatable
   {
     $token = $this->getLoginToken();
     //$this->withAccessToken($token);
-    return $this->id . '|' . $token->token;
-
-    /*
-    $currentAccessToken = $this->currentAccessToken();
-    if (empty($currentAccessToken)) {
-      return null;
-    }
-    return $currentAccessToken->id . '|' . Crypt::decryptString($currentAccessToken->token);
-  */
+    return $this->id . '|' . Crypt::decryptString($token->token);
   }
 
   /**

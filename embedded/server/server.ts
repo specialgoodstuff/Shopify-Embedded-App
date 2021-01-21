@@ -92,9 +92,19 @@ app.prepare().then(() => {
                 Accept: 'application/json'
               }
             });
-            const shopJson = await shopResponse.json();
+            let shopJson = await shopResponse.json();
+            shopJson = shopJson.shop;
+            const { id, domain, email } = shopJson;
+            shopJson = JSON.stringify(shopJson);
 
             console.log('SHOP JSON', shopJson);
+
+            let body = JSON.stringify({
+              id: id,
+              domain: domain,
+              email: email,
+              data: shopJson
+            }).replace(/\\\\"/g, '\\"');
 
             console.log('REGISTER REQUEST', APP_URL + '/api/shops', {
               method: 'post',
@@ -103,12 +113,7 @@ app.prepare().then(() => {
                 Accept: 'application/json',
                 Authorization: 'Bearer ' + response.data.accessToken
               },
-              body: JSON.stringify({
-                id: shopJson.id,
-                domain: shopJson.domain,
-                email: shopJson.email,
-                data: shopJson
-              })
+              body: body
             });
 
             const registerResponse = await fetch(APP_URL + '/api/shops', {
@@ -118,12 +123,7 @@ app.prepare().then(() => {
                 Accept: 'application/json',
                 Authorization: 'Bearer ' + response.data.accessToken
               },
-              body: JSON.stringify({
-                id: shopJson.id,
-                domain: shopJson.domain,
-                email: shopJson.email,
-                data: shopJson
-              })
+              body: body
             });
 
             const registerJson = await registerResponse.json();
