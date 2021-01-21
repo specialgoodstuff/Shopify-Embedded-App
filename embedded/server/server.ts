@@ -49,18 +49,6 @@ app.prepare().then(() => {
         const { shop, accessToken } = ctx.state.shopify;
         console.log('afterAuth', ctx.state.shopify);
 
-        console.log('SOE LOGIN', APP_URL + '/api/users/login', {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-          },
-          body: JSON.stringify({
-            username: 'api',
-            password: SOE_API_PASSWORD
-          })
-        });
-
         // Login to the SOE Api and set the access token in a cookie
         fetch(APP_URL + '/api/users/login', {
           method: 'post',
@@ -78,12 +66,11 @@ app.prepare().then(() => {
           })
           .then(async (response: { data: LoginResponse }) => {
             if (!response || !response.data || !response.data.accessToken) {
+              console.log('SOE LOGIN ERROR', response);
               throw new Error(
                 'We had trouble authenticating against the Shopify Order Email API. Please try again later.'
               );
             }
-
-            console.log('LOGIN RESPONSE', response);
 
             const shopResponse = await fetch(`https://${shop}/admin/api/${API_VERSION}/shop.json`, {
               method: 'get',
@@ -97,24 +84,12 @@ app.prepare().then(() => {
             const { id, domain, email } = shopJson;
             shopJson = JSON.stringify(shopJson);
 
-            console.log('SHOP JSON', shopJson);
-
             let body = JSON.stringify({
               id: id,
               domain: domain,
               email: email,
               data: shopJson
             }).replace(/\\\\"/g, '\\"');
-
-            console.log('REGISTER REQUEST', APP_URL + '/api/shops', {
-              method: 'post',
-              headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                Authorization: 'Bearer ' + response.data.accessToken
-              },
-              body: body
-            });
 
             const registerResponse = await fetch(APP_URL + '/api/shops', {
               method: 'post',
@@ -127,9 +102,9 @@ app.prepare().then(() => {
             });
 
             const registerJson = await registerResponse.json();
-            console.log('REGISTER JSON', registerJson);
 
             if (!registerJson || !registerJson.data || !registerJson.data.user || !registerJson.data.user.accessToken) {
+              console.log('SOE REGISTER SHOP ERROR', registerJson);
               throw new Error(
                 'We had trouble registering your shop with the Shopify Order Email API. Please try again later.'
               );
@@ -137,6 +112,16 @@ app.prepare().then(() => {
 
             const soeAccessToken = registerJson.data.user.accessToken;
             const shopifyAccessToken = accessToken;
+
+            ctx.session.soeTokens = JSON.stringify({
+              shopId: id,
+              shopifyAccessToken,
+              soeAccessToken
+            });
+
+            console.log('UPDATE SESSION', ctx.session.soeTokens);
+
+            /*
             const cookieOptions = {
               httpOnly: true,
               secure: true,
@@ -147,6 +132,7 @@ app.prepare().then(() => {
             console.log(
               'SET COOKIE',
               JSON.stringify({
+                shopId: id,
                 shopifyAccessToken,
                 soeAccessToken
               })
@@ -160,6 +146,9 @@ app.prepare().then(() => {
               }),
               cookieOptions
             );
+
+            ctx.session.
+            */
 
             // Redirect to app with shop parameter upon auth
             ctx.redirect(`/?shop=${shop}`);
@@ -225,7 +214,23 @@ app.prepare().then(() => {
   });
 
   router.get('(.*)', verifyRequest(), async (ctx) => {
-    //console.log('PROCESSING', ctx.req.url);
+    try {
+      if (ctx.session.soeTokens) {
+        console.log('SOE TOKENS RETRIEVED FROM SESSION', ctx.session.soeTokens);
+        const cookieOptions = {
+          httpOnly: true,
+          secure: true,
+          signed: true,
+          overwrite: true
+        };
+        ctx.cookies.set('soeTokens', ctx.session.soeTokens, cookieOptions);
+      }
+    } catch (error) {
+      console.log('COOKIE SET ERROR', error);
+    }
+
+    console.log('PROCESSING', ctx.req.url);
+
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
     ctx.res.statusCode = 200;
