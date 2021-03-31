@@ -24,7 +24,7 @@ const app = next({
 });
 const handle = app.getRequestHandler();
 
-const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, API_VERSION, APP_URL, SOE_API_PASSWORD } = process.env;
+const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, API_VERSION, APP_URL, SEA_API_PASSWORD } = process.env;
 
 app.prepare().then(() => {
   const server = new Koa();
@@ -49,7 +49,7 @@ app.prepare().then(() => {
         const { shop, accessToken } = ctx.state.shopify;
         console.log('afterAuth', ctx.state.shopify);
 
-        // Login to the SOE Api and set the access token in a cookie
+        // Login to the SEA Api and set the access token in a cookie
         fetch(APP_URL + '/api/users/login', {
           method: 'post',
           headers: {
@@ -58,7 +58,7 @@ app.prepare().then(() => {
           },
           body: JSON.stringify({
             username: 'api',
-            password: SOE_API_PASSWORD
+            password: SEA_API_PASSWORD
           })
         })
           .then((response: Response) => {
@@ -66,7 +66,7 @@ app.prepare().then(() => {
           })
           .then(async (response: { data: LoginResponse }) => {
             if (!response || !response.data || !response.data.accessToken) {
-              console.log('SOE LOGIN ERROR', response);
+              console.log('SEA LOGIN ERROR', response);
               throw new Error(
                 'We had trouble authenticating against the Shopify Order Email API. Please try again later.'
               );
@@ -104,22 +104,22 @@ app.prepare().then(() => {
             const registerJson = await registerResponse.json();
 
             if (!registerJson || !registerJson.data || !registerJson.data.user || !registerJson.data.user.accessToken) {
-              console.log('SOE REGISTER SHOP ERROR', registerJson);
+              console.log('SEA REGISTER SHOP ERROR', registerJson);
               throw new Error(
                 'We had trouble registering your shop with the Shopify Order Email API. Please try again later.'
               );
             }
 
-            const soeAccessToken = registerJson.data.user.accessToken;
+            const seaAccessToken = registerJson.data.user.accessToken;
             const shopifyAccessToken = accessToken;
 
-            ctx.session.soeTokens = JSON.stringify({
+            ctx.session.seaTokens = JSON.stringify({
               shopId: id,
               shopifyAccessToken,
-              soeAccessToken
+              seaAccessToken
             });
 
-            console.log('UPDATE SESSION', ctx.session.soeTokens);
+            console.log('UPDATE SESSION', ctx.session.seaTokens);
 
             /*
             const cookieOptions = {
@@ -134,15 +134,15 @@ app.prepare().then(() => {
               JSON.stringify({
                 shopId: id,
                 shopifyAccessToken,
-                soeAccessToken
+                seaAccessToken
               })
             );
 
             ctx.cookies.set(
-              'soeTokens',
+              'seaTokens',
               JSON.stringify({
                 shopifyAccessToken,
-                soeAccessToken
+                seaAccessToken
               }),
               cookieOptions
             );
@@ -215,15 +215,15 @@ app.prepare().then(() => {
 
   router.get('(.*)', verifyRequest(), async (ctx) => {
     try {
-      if (ctx.session.soeTokens) {
-        console.log('SOE TOKENS RETRIEVED FROM SESSION', ctx.session.soeTokens);
+      if (ctx.session.seaTokens) {
+        console.log('SEA TOKENS RETRIEVED FROM SESSION', ctx.session.seaTokens);
         const cookieOptions = {
           httpOnly: true,
           secure: true,
           signed: true,
           overwrite: true
         };
-        ctx.cookies.set('soeTokens', ctx.session.soeTokens, cookieOptions);
+        ctx.cookies.set('seaTokens', ctx.session.seaTokens, cookieOptions);
       }
     } catch (error) {
       console.log('COOKIE SET ERROR', error);

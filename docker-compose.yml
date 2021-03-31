@@ -2,70 +2,70 @@ version: '3'
 services:
 
   # maps any service with a VIRTUAL_HOST env variable to the specified host 
-  soe-nginx-proxy:
+  sea-nginx-proxy:
     image: jwilder/nginx-proxy
     ports:
       - "80:80"
       - "443:443"
     networks:
-      - soe-network
+      - sea-network
     volumes:
       - "/etc/nginx/vhost.d"
       - "/usr/share/nginx/html"
       - "/var/run/docker.sock:/tmp/docker.sock:ro"
       #- "nginx_certs:/etc/nginx/certs:rw"
 
-  soe-web-ngrok:
+  sea-web-ngrok:
     image: wernight/ngrok
     networks:
-      - soe-network
+      - sea-network
     depends_on:
-      - soe-nginx-proxy
+      - sea-nginx-proxy
     environment:
       NGROK_AUTH: ${NGROK_AUTH}
       NGROK_SUBDOMAIN: sgs
-      NGROK_LOOK_DOMAIN: soe-nginx
+      NGROK_LOOK_DOMAIN: sea-nginx
 
-  soe-embedded-ngrok:
+  sea-embedded-ngrok:
     image: wernight/ngrok
     networks:
-      - soe-network
+      - sea-network
     depends_on:
-      - soe-embedded
+      - sea-embedded
     environment:
       NGROK_AUTH: ${NGROK_AUTH}
       NGROK_SUBDOMAIN: embedded-sgs
       NGROK_PORT: 3000
-      NGROK_LOOK_DOMAIN: soe-embedded
+      NGROK_LOOK_DOMAIN: sea-embedded
 
   # Nginx Service
-  soe-nginx:
+  sea-nginx:
     image: nginx:alpine
-    container_name: soe-nginx
+    container_name: sea-nginx
     restart: unless-stopped
     tty: true
     networks:
-      - soe-network
+      - sea-network
     volumes:
       - ./web:/var/www
       - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
     environment:
-      VIRTUAL_HOST: soe.localhost
+      VIRTUAL_HOST: sea.localhost
     depends_on:
-      - soe-embedded
-      - soe-web
+      - sea-embedded
+      - sea-web
 
   # PHP Service
-  soe-web:
+  sea-web:
     build:
       context: .
       dockerfile: ./docker/php/Dockerfile
-    image: soe-web
-    container_name: soe-web 
+    image: sea-web
+    container_name: sea-web 
     restart: unless-stopped
     tty: true
     environment:
-      DB_HOST: soe-db
+      DB_HOST: sea-db
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -74,49 +74,49 @@ services:
       EMBEDDED_URL: ${EMBEDDED_URL}
       NYLAS_CLIENT_ID: ${NYLAS_CLIENT_ID}
       NYLAS_CLIENT_SECRET: ${NYLAS_CLIENT_SECRET}
-      SOE_API_PASSWORD: ${SOE_API_PASSWORD}
-      SOE_SHOP_PASSWORD: ${SOE_SHOP_PASSWORD}
+      SEA_API_PASSWORD: ${SEA_API_PASSWORD}
+      SEA_SHOP_PASSWORD: ${SEA_SHOP_PASSWORD}
     working_dir: /var/www
     networks:
-      - soe-network
+      - sea-network
     volumes:
       - ./web:/var/www
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     depends_on:
-      - soe-db
-      - soe-db-test
+      - sea-db
+      - sea-db-test
 
   # Node/NextJS service
-  soe-embedded:
+  sea-embedded:
     build: 
       context: .
       dockerfile: ./docker/node/Dockerfile
     command: sh -c "npm run dev"
     env_file: ./embedded/.env
     environment:
-      VIRTUAL_HOST: embedded.soe.localhost
+      VIRTUAL_HOST: embedded.sea.localhost
       HOST: ${EMBEDDED_URL}  
       APP_URL: ${APP_URL}
       EMBEDDED_URL: ${EMBEDDED_URL}
       NYLAS_CLIENT_ID: ${NYLAS_CLIENT_ID}
-      SOE_API_PASSWORD: ${SOE_API_PASSWORD}
+      SEA_API_PASSWORD: ${SEA_API_PASSWORD}
       PORT: 3000
-    container_name: soe-embedded
+    container_name: sea-embedded
     ports:
       - 3000:3000
     expose:
       - 3000
     networks:
-      - soe-network
+      - sea-network
     volumes:
       - ./embedded:/var/www
       #- /var/www/node_modules
     command: ["npm", "run", "dev"]
 
   # MySQL Service
-  soe-db:
+  sea-db:
     image: mysql:8.0.21
-    container_name: soe-db
+    container_name: sea-db
     restart: unless-stopped
     tty: true
     ports:
@@ -127,14 +127,14 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     networks:
-      - soe-network
+      - sea-network
     volumes:
-      - soe-dbdata:/var/lib/mysql
+      - sea-dbdata:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
 
-  soe-db-test:
+  sea-db-test:
     image: mysql:8.0.21
-    container_name: soe-db-test
+    container_name: sea-db-test
     restart: unless-stopped
     tty: true
     ports:
@@ -145,28 +145,28 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     networks:
-      - soe-network
+      - sea-network
     volumes:
-      - soe-dbdata-test:/var/lib/mysql
+      - sea-dbdata-test:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
 
-  soe-mailhog:
+  sea-mailhog:
       image: 'mailhog/mailhog:latest'
       ports:
           - 1025:1025
           - 8025:8025
       networks:
-          - soe-network
+          - sea-network
 
 
 # Docker Networks
 networks:
-  soe-network:
+  sea-network:
     driver: bridge
 
 # Volumes
 volumes:
-  soe-dbdata:
+  sea-dbdata:
     driver: local
-  soe-dbdata-test:
+  sea-dbdata-test:
     driver: local
