@@ -47,7 +47,9 @@ app.prepare().then(async () => {
           accessToken,
           path: '/webhooks',
           topic: 'APP_UNINSTALLED',
-          webhookHandler: async (topic, shop, body) => delete ACTIVE_SHOPIFY_SHOPS[shop]
+          webhookHandler: async (topic, shop, body) => {
+            delete ACTIVE_SHOPIFY_SHOPS[shop];
+          }
         });
 
         if (!response.success) {
