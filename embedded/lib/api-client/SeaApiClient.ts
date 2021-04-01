@@ -5,7 +5,7 @@ import ClientsideApiClient from './ClientsideApiClient';
 import { ShopResponse } from './ShopifyAdminApiResponses';
 import { isClient } from 'lib/Util';
 
-export default class SoeApiClient extends ClientsideApiClient {
+export default class SeaApiClient extends ClientsideApiClient {
   public getRequestUrl(url: string): string {
     const { publicRuntimeConfig } = getConfig();
     return publicRuntimeConfig.appUrl + '/api/' + url;

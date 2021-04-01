@@ -47,6 +47,7 @@ function MyProvider(props) {
 
 class MyApp extends App {
   render() {
+    //@ts-ignore
     const { Component, pageProps, shopOrigin } = this.props;
     return (
       <AppProvider i18n={translations}>
