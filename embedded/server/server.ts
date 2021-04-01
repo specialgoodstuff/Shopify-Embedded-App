@@ -82,7 +82,9 @@ app.prepare().then(async () => {
               );
             }
 
-            const shopResponse = await fetch(`https://${shop}/admin/api/${Shopify.Context.API_VERSION}/shop.json`, {
+            const shopifyApiUrl = `https://${shop}/admin/api/${Shopify.Context.API_VERSION}`;
+
+            const shopResponse = await fetch(`${shopifyApiUrl}/shop.json`, {
               method: 'get',
               headers: {
                 'X-Shopify-Access-Token': accessToken,
@@ -134,28 +136,21 @@ app.prepare().then(async () => {
             */
 
             const cookieOptions = {
-              httpOnly: true,
+              httpOnly: false,
               secure: true,
               signed: true,
               overwrite: true
             };
 
-            console.log(
-              'SET COOKIE',
-              JSON.stringify({
-                shopifyAccessToken,
-                seaAccessToken
-              })
-            );
+            const cookie = JSON.stringify({
+              shopifyApiUrl,
+              shopifyAccessToken,
+              seaAccessToken
+            });
 
-            ctx.cookies.set(
-              'seaTokens',
-              JSON.stringify({
-                shopifyAccessToken,
-                seaAccessToken
-              }),
-              cookieOptions
-            );
+            console.log('SET COOKIE', cookie);
+
+            ctx.cookies.set('seaTokens', cookie, cookieOptions);
           });
 
         // Redirect to app with shop parameter upon auth
