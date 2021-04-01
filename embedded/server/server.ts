@@ -2,21 +2,12 @@ import '@babel/polyfill';
 import dotenv from 'dotenv';
 import 'isomorphic-fetch';
 import createShopifyAuth, { verifyRequest } from '@shopify/koa-shopify-auth';
-import graphQLProxy, { ApiVersion } from '@shopify/koa-shopify-graphql-proxy';
+import Shopify, { ApiVersion } from '@shopify/shopify-api';
 import Koa from 'koa';
 import next from 'next';
 import Router from 'koa-router';
-import session from 'koa-session';
-import mount from 'koa-mount';
-// Forked custom version of koa-proxies to pass ctx into proxy factory
-// and facillitate use of session access token for shopify api requests
-// We've also included koa-proxies in the package json so that npm
-// will load that package's dependencies.
-import proxy, { IKoaProxiesOptions } from '../lib/koa-proxies';
-import { LoginResponse } from '../lib/api-client/SoeApiResponses';
 
 dotenv.config();
-
 const port = parseInt(process.env.PORT, 10) || 8081;
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({
@@ -24,29 +15,48 @@ const app = next({
 });
 const handle = app.getRequestHandler();
 
-const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, API_VERSION, APP_URL, SEA_API_PASSWORD } = process.env;
+Shopify.Context.initialize({
+  API_KEY: process.env.SHOPIFY_API_KEY,
+  API_SECRET_KEY: process.env.SHOPIFY_API_SECRET,
+  SCOPES: process.env.SCOPES.split(','),
+  HOST_NAME: process.env.HOST.replace(/https:\/\//, ''),
+  API_VERSION: ApiVersion.October20,
+  IS_EMBEDDED_APP: true,
+  // This should be replaced with your preferred storage strategy
+  SESSION_STORAGE: new Shopify.Session.MemorySessionStorage()
+});
 
-app.prepare().then(() => {
+// Storing the currently active shops in memory will force them to re-login when your server restarts. You should
+// persist this object in your app.
+const ACTIVE_SHOPIFY_SHOPS = {};
+
+app.prepare().then(async () => {
   const server = new Koa();
   const router = new Router();
+  server.keys = [Shopify.Context.API_SECRET_KEY];
   server.use(
-    session(
-      {
-        sameSite: 'none',
-        secure: true
-      },
-      server
-    )
-  );
-  server.keys = [SHOPIFY_API_SECRET];
-  server.use(
+    //@ts-ignore
     createShopifyAuth({
-      apiKey: SHOPIFY_API_KEY,
-      secret: SHOPIFY_API_SECRET,
-      scopes: [SCOPES],
-
       async afterAuth(ctx) {
-        const { shop, accessToken } = ctx.state.shopify;
+        // Access token and shop available in ctx.state.shopify
+        const { shop, accessToken, scope } = ctx.state.shopify;
+        ACTIVE_SHOPIFY_SHOPS[shop] = scope;
+
+        const response = await Shopify.Webhooks.Registry.register({
+          shop,
+          accessToken,
+          path: '/webhooks',
+          topic: 'APP_UNINSTALLED',
+          webhookHandler: async (topic, shop, body) => delete ACTIVE_SHOPIFY_SHOPS[shop]
+        });
+
+        if (!response.success) {
+          console.log(`Failed to register APP_UNINSTALLED webhook: ${response.result}`);
+        }
+
+        /*
+        const { API_VERSION, APP_URL, SEA_API_PASSWORD } = process.env;
+
         console.log('afterAuth', ctx.state.shopify);
 
         // Login to the SEA Api and set the access token in a cookie
@@ -68,7 +78,7 @@ app.prepare().then(() => {
             if (!response || !response.data || !response.data.accessToken) {
               console.log('SEA LOGIN ERROR', response);
               throw new Error(
-                'We had trouble authenticating against the Shopify Order Email API. Please try again later.'
+                'We had trouble authenticating against the Shopify Embedded App API. Please try again later.'
               );
             }
 
@@ -121,120 +131,51 @@ app.prepare().then(() => {
 
             console.log('UPDATE SESSION', ctx.session.seaTokens);
 
-            /*
-            const cookieOptions = {
-              httpOnly: true,
-              secure: true,
-              signed: true,
-              overwrite: true
-            };
 
-            console.log(
-              'SET COOKIE',
-              JSON.stringify({
-                shopId: id,
-                shopifyAccessToken,
-                seaAccessToken
-              })
-            );
-
-            ctx.cookies.set(
-              'seaTokens',
-              JSON.stringify({
-                shopifyAccessToken,
-                seaAccessToken
-              }),
-              cookieOptions
-            );
-
-            ctx.session.
-            */
 
             // Redirect to app with shop parameter upon auth
             ctx.redirect(`/?shop=${shop}`);
-          })
-          .catch((error) => {
-            console.log('ERROR', error);
-            ctx.throw(500, error.message);
-            //ctx.redirect(`/?shop=${shop}&error=${encodeURIComponent(error.message)}`);
-          });
+*/
+
+        // Redirect to app with shop parameter upon auth
+        ctx.redirect(`/?shop=${shop}`);
       }
     })
   );
 
-  // provision /shopify-api/graphql
-  server.use(
-    mount(
-      '/shopify-api',
-      graphQLProxy({
-        version: API_VERSION as ApiVersion
-      })
-    )
-  );
-
-  // provision /shopify-api/s3
-  server.use(
-    proxy('/shopify-api/s3', {
-      target: 'https://shopify.s3.amazonaws.com',
-      changeOrigin: true,
-      rewrite: (path) => path.replace(/^\/shopify-api\/s3/, '')
-    })
-  );
-
-  // provision /shopify-api/admin
-  server.use(
-    proxy(
-      '/shopify-api/admin',
-      (params, ctx): IKoaProxiesOptions => {
-        const { accessToken, shop } = ctx.session;
-        //console.log("session", ctx.session);
-        const target = `https://${shop}`;
-        return {
-          target: target,
-          changeOrigin: true,
-          rewrite: (path: string) => {
-            return path.replace(/^\/shopify-api\/admin/, '/admin/api/' + API_VERSION);
-          },
-          logs: true,
-          /**
-           * @see https://community.shopify.com/c/Shopify-APIs-SDKs/POST-to-admin-orders-json-returns-301-Moved-Permanently/td-p/288085
-           */
-          headers: {
-            'X-Shopify-Access-Token': accessToken
-          }
-        };
-      }
-    )
-  );
-
-  router.get('/error', verifyRequest(), async (ctx) => {
-    await app.render(ctx.req, ctx.res, '/error', ctx.query);
-    ctx.respond = true;
-    ctx.res.statusCode = 200;
-  });
-
-  router.get('(.*)', verifyRequest(), async (ctx) => {
-    try {
-      if (ctx.session.seaTokens) {
-        console.log('SEA TOKENS RETRIEVED FROM SESSION', ctx.session.seaTokens);
-        const cookieOptions = {
-          httpOnly: true,
-          secure: true,
-          signed: true,
-          overwrite: true
-        };
-        ctx.cookies.set('seaTokens', ctx.session.seaTokens, cookieOptions);
-      }
-    } catch (error) {
-      console.log('COOKIE SET ERROR', error);
-    }
-
-    console.log('PROCESSING', ctx.req.url);
-
+  const handleRequest = async (ctx) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
     ctx.res.statusCode = 200;
+  };
+
+  router.get('/', async (ctx) => {
+    const shop = ctx.query.shop;
+
+    // This shop hasn't been seen yet, go through OAuth to create a session
+    if (ACTIVE_SHOPIFY_SHOPS[shop] === undefined) {
+      ctx.redirect(`/auth?shop=${shop}`);
+    } else {
+      await handleRequest(ctx);
+    }
   });
+
+  router.post('/webhooks', async (ctx) => {
+    try {
+      await Shopify.Webhooks.Registry.process(ctx.req, ctx.res);
+      console.log(`Webhook processed, returned status code 200`);
+    } catch (error) {
+      console.log(`Failed to process webhook: ${error}`);
+    }
+  });
+
+  router.post('/graphql', verifyRequest({ returnHeader: true }), async (ctx, next) => {
+    await Shopify.Utils.graphqlProxy(ctx.req, ctx.res);
+  });
+
+  router.get('(/_next/static/.*)', handleRequest); // Static content is clear
+  router.get('/_next/webpack-hmr', handleRequest); // Webpack content is clear
+  router.get('(.*)', verifyRequest(), handleRequest); // Everything else must have sessions
 
   server.use(router.allowedMethods());
   server.use(router.routes());

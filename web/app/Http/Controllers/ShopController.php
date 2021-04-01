@@ -46,7 +46,7 @@ class ShopController extends Controller
       'shopifyAccessToken' => $request->get('shopifyAccessToken'),
       'email' => $request->get('email'),
       'type' => 'shop',
-      'password' => env('SEA_SHOP_PASSWORD', 'luckBeALady021!'),
+      'password' => env('SEA_SHOP_PASSWORD'),
     ];
 
     if (empty($shopUser)) {

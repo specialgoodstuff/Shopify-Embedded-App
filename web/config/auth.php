@@ -114,4 +114,11 @@ return [
     */
 
   'password_timeout' => 10800,
+
+  'api_username' => env('SEA_API_USERNAME', 'api'),
+
+  /**
+   * Default password for the api user
+   */
+  'api_password' => env('SEA_API_PASSWORD', 'test')
 ];

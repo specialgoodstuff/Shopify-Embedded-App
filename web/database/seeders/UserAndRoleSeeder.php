@@ -24,19 +24,20 @@ class UserAndRoleSeeder extends Seeder
 
     // Create Permissions
     $permission = Permission::create(['name' => 'shop-create']);
-    //super-admin was implicitly assigned all permissions in the AuthServiceProvider
-    //$role->givePermissionTo($permission);
+    //super-admin is implicitly assigned all permissions in the AuthServiceProvider
+
+    $email = config('auth.api_username') . '@' . config('app.url');
 
     // Create Users
     User::firstOrCreate([
-      'email' => 'api-user@shopifyorderemails.com',
-      'username' => 'api',
-      'password' => 'itWouldBeAVeryFineThingToLetMeIn2021!',
+      'email' => $email,
+      'username' => config('auth.api_username'),
+      'password' => config('auth.api_password'),
       'type' => 'system',
     ])->assignRole('super-admin');
 
     User::firstOrCreate([
-      'email' => 'admin@shopifyorderemails.com',
+      'email' => 'admin@' . config('app.url'),
       'password' => 'adminPassword2021!',
       'username' => 'admin',
       'type' => 'user',
