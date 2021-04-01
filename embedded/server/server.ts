@@ -6,6 +6,7 @@ import Shopify, { ApiVersion } from '@shopify/shopify-api';
 import Koa from 'koa';
 import next from 'next';
 import Router from 'koa-router';
+import { LoginResponse } from '../lib/api-client/SeaApiResponses';
 
 dotenv.config();
 const port = parseInt(process.env.PORT, 10) || 8081;
@@ -56,13 +57,10 @@ app.prepare().then(async () => {
           console.log(`Failed to register APP_UNINSTALLED webhook: ${response.result}`);
         }
 
-        /*
-        const { API_VERSION, APP_URL, SEA_API_PASSWORD } = process.env;
-
-        console.log('afterAuth', ctx.state.shopify);
+        const { APP_URL, SEA_API_PASSWORD } = process.env;
 
         // Login to the SEA Api and set the access token in a cookie
-        fetch(APP_URL + '/api/users/login', {
+        await fetch(APP_URL + '/api/users/login', {
           method: 'post',
           headers: {
             'Content-Type': 'application/json',
@@ -80,11 +78,11 @@ app.prepare().then(async () => {
             if (!response || !response.data || !response.data.accessToken) {
               console.log('SEA LOGIN ERROR', response);
               throw new Error(
-                'We had trouble authenticating against the Shopify Embedded App API. Please try again later.'
+                'We had trouble authenticating against the Shopify Order Email API. Please try again later.'
               );
             }
 
-            const shopResponse = await fetch(`https://${shop}/admin/api/${API_VERSION}/shop.json`, {
+            const shopResponse = await fetch(`https://${shop}/admin/api/${Shopify.Context.API_VERSION}/shop.json`, {
               method: 'get',
               headers: {
                 'X-Shopify-Access-Token': accessToken,
@@ -125,6 +123,7 @@ app.prepare().then(async () => {
             const seaAccessToken = registerJson.data.user.accessToken;
             const shopifyAccessToken = accessToken;
 
+            /*
             ctx.session.seaTokens = JSON.stringify({
               shopId: id,
               shopifyAccessToken,
@@ -132,12 +131,32 @@ app.prepare().then(async () => {
             });
 
             console.log('UPDATE SESSION', ctx.session.seaTokens);
+            */
 
+            const cookieOptions = {
+              httpOnly: true,
+              secure: true,
+              signed: true,
+              overwrite: true
+            };
 
+            console.log(
+              'SET COOKIE',
+              JSON.stringify({
+                shopifyAccessToken,
+                seaAccessToken
+              })
+            );
 
-            // Redirect to app with shop parameter upon auth
-            ctx.redirect(`/?shop=${shop}`);
-*/
+            ctx.cookies.set(
+              'seaTokens',
+              JSON.stringify({
+                shopifyAccessToken,
+                seaAccessToken
+              }),
+              cookieOptions
+            );
+          });
 
         // Redirect to app with shop parameter upon auth
         ctx.redirect(`/?shop=${shop}`);

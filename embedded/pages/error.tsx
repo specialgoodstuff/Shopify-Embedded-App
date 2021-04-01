@@ -1,7 +1,6 @@
 import React from 'react';
 import getConfig from 'next/config';
 const { publicRuntimeConfig } = getConfig();
-import isEmail from 'validator/lib/isEmail';
 import _ from 'lodash';
 import { Page, Heading, Card, TextField, FormLayout, Layout, Button } from '@shopify/polaris';
 

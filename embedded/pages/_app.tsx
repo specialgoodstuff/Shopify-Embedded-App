@@ -49,11 +49,13 @@ class MyApp extends App {
   render() {
     //@ts-ignore
     const { Component, pageProps, shopOrigin } = this.props;
+    //@ts-ignore (set in next.config.js)
+    const apiKey = API_KEY;
     return (
       <AppProvider i18n={translations}>
         <Provider
           config={{
-            apiKey: API_KEY,
+            apiKey: apiKey,
             shopOrigin: shopOrigin,
             forceRedirect: true
           }}
@@ -64,7 +66,7 @@ class MyApp extends App {
     );
   }
 }
-
+//@ts-ignore
 MyApp.getInitialProps = async ({ ctx }) => {
   return {
     shopOrigin: ctx.query.shop
